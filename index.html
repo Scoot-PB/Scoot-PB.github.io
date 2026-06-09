@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vespator Front Campaign Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0a0f16;
+    --void-2:#0e1520;
+    --panel:#1b2735;
+    --panel-2:#223141;
+    --line:#d7e0e8;
+    --line-dim:#5f7184;
+    --slot:#8d99a6;
+    --a1:#2d7dd2;   /* cobalt — circle */
+    --a2:#0f9960;   /* viridian — diamond */
+    --a3:#d33f49;   /* crimson — triangle */
+    --amber:#d9a441;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--void);
+    color:var(--line);
+    font-family:'Rajdhani',system-ui,sans-serif;
+    overflow:hidden;
+    display:flex;flex-direction:column;
+  }
+  button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+  button:focus-visible, [tabindex]:focus-visible, input:focus-visible{
+    outline:2px solid var(--amber);outline-offset:2px;
+  }
+
+  /* ============ HEADER ============ */
+  header{
+    flex:0 0 auto;
+    padding:10px 18px 8px;
+    background:linear-gradient(180deg,var(--void-2),var(--void));
+    border-bottom:1px solid #2a3a4c;
+    display:flex;flex-wrap:wrap;align-items:center;gap:14px 26px;
+    z-index:20;
+  }
+  .title h1{
+    font-size:21px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    border-bottom:2px solid var(--line);padding-bottom:2px;line-height:1.1;
+    white-space:nowrap;
+  }
+  .title small{display:block;font-size:10px;letter-spacing:.3em;color:var(--line-dim);text-transform:uppercase;margin-top:3px}
+
+  .track{display:flex;flex-direction:column;gap:2px;min-width:280px;flex:1 1 340px;max-width:660px}
+  .track-label{font-size:9px;letter-spacing:.25em;color:var(--line-dim);text-transform:uppercase;display:flex;justify-content:space-between}
+  .track-boxes{display:flex;width:100%}
+  .track-boxes button{
+    flex:1;height:16px;border:1px solid var(--line-dim);border-left:none;
+    background:transparent;transition:background .12s;min-width:0;padding:0;
+  }
+  .track-boxes button:first-child{border-left:1px solid var(--line-dim)}
+  .track-boxes button.filled{background:var(--line)}
+  .track-boxes button.current{background:var(--amber)}
+  .track-boxes button:hover{background:#3c4f63}
+  .track-ticks{display:flex;font-size:9px;color:var(--line-dim);letter-spacing:.05em}
+  .track-ticks span{flex:1;text-align:left}
+  .track-ticks span:last-child{flex:0;}
+
+  .alliances{display:flex;gap:14px;align-items:center}
+  .alliance{display:flex;align-items:center;gap:6px}
+  .alliance .chip{width:18px;height:18px;display:grid;place-items:center;border-radius:3px}
+  .alliance input{
+    background:transparent;border:none;border-bottom:1px dashed transparent;
+    color:var(--line);font:600 13px 'Rajdhani';letter-spacing:.06em;width:88px;
+    text-transform:uppercase;
+  }
+  .alliance input:hover,.alliance input:focus{border-bottom-color:var(--line-dim)}
+
+  .toolbar{display:flex;gap:8px;align-items:center;margin-left:auto}
+  .tbtn{
+    border:1px solid var(--line-dim);padding:4px 12px;font:600 12px 'Rajdhani';
+    letter-spacing:.12em;text-transform:uppercase;border-radius:2px;
+    transition:background .12s,border-color .12s;
+  }
+  .tbtn:hover{background:var(--panel);border-color:var(--line)}
+  .save-note{font-size:10px;letter-spacing:.15em;color:var(--line-dim);text-transform:uppercase;min-width:64px;text-align:right}
+
+  /* ============ MAP VIEWPORT ============ */
+  #viewport{flex:1;overflow:auto;position:relative;background:var(--void)}
+  #stage{
+    position:relative;width:2048px;height:1520px;
+    transform-origin:0 0;
+    background:
+      radial-gradient(ellipse 900px 500px at 70% 40%, rgba(64,86,118,.16), transparent 60%),
+      radial-gradient(ellipse 700px 600px at 25% 75%, rgba(90,70,110,.10), transparent 60%),
+      var(--void);
+  }
+  #stars,#lines{position:absolute;inset:0;width:100%;height:100%}
+  #lines path{stroke:var(--line);stroke-width:1.4;stroke-dasharray:7 7;fill:none;opacity:.65}
+
+  /* ============ PLANET CARD ============ */
+  .planet{position:absolute;width:352px;height:226px}
+  .rings{position:absolute;pointer-events:none;opacity:.5}
+  .nameplate{
+    position:absolute;left:50%;top:0;transform:translateX(-50%);
+    background:var(--void-2);border:1px solid var(--line);
+    padding:2px 12px 3px;text-align:center;z-index:2;white-space:nowrap;
+  }
+  .nameplate b{display:block;font-size:14px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+  .nameplate span{display:block;font-size:9px;letter-spacing:.18em;color:var(--slot);text-transform:uppercase}
+  .globe{
+    position:absolute;left:163px;top:108px;width:26px;height:26px;border-radius:50%;
+    border:1.5px solid var(--line);
+    background:
+      radial-gradient(circle at 35% 30%, #44586e, #18222e 70%);
+    box-shadow:0 0 10px rgba(215,224,232,.35);
+  }
+  .globe::before,.globe::after{
+    content:"";position:absolute;inset:2px;border-radius:50%;
+    border:.5px solid rgba(215,224,232,.55);
+  }
+  .globe::before{transform:scaleX(.45)}
+  .globe::after{transform:scaleY(.45)}
+
+  .sec-label{font-size:8px;letter-spacing:.18em;color:var(--line);text-transform:uppercase;margin-bottom:2px}
+
+  /* power grid */
+  .power{position:absolute;left:0;top:42px}
+  .pgrid{
+    display:grid;grid-template-columns:14px repeat(3,30px);grid-auto-rows:26px;gap:3px;
+    background:linear-gradient(100deg,var(--panel) 88%,transparent);
+    padding:6px;border-radius:2px;
+  }
+  .prow-num{font-size:12px;font-weight:600;color:var(--slot);display:grid;place-items:center}
+  .pcell{
+    background:#37424d;border-radius:1px;display:grid;place-items:center;
+    transition:background .1s;padding:0;
+  }
+  .pcell:hover{background:#4a5a6b}
+  .pcell.a1{background:var(--a1)}
+  .pcell.a2{background:var(--a2)}
+  .pcell.a3{background:var(--a3)}
+  .pcell svg{width:14px;height:14px;display:block}
+
+  /* infrastructure */
+  .infra{position:absolute;left:204px;top:38px}
+  .infra-slots{
+    display:flex;gap:5px;background:linear-gradient(80deg,transparent,var(--panel) 12%);
+    padding:6px 7px;border-radius:2px;
+  }
+  .islot{
+    width:30px;height:30px;border-radius:50%;background:var(--slot);
+    display:grid;place-items:center;transition:transform .1s,background .1s;padding:0;
+  }
+  .islot:hover{transform:scale(1.1)}
+  .islot.a1{background:var(--a1)}
+  .islot.a2{background:var(--a2)}
+  .islot.a3{background:var(--a3)}
+  .islot svg{width:19px;height:19px;color:#0c1117}
+  .islot.empty svg{display:none}
+
+  /* theatres */
+  .theatres{position:absolute;left:204px;top:128px}
+  .t-slots{
+    display:flex;gap:5px;background:linear-gradient(80deg,transparent,var(--panel) 12%);
+    padding:6px 7px;border-radius:2px;
+  }
+  .tslot{
+    width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line);
+    background:var(--void-2);display:grid;place-items:center;
+    transition:transform .1s;color:var(--line);padding:0;
+  }
+  .tslot:hover{transform:scale(1.1);border-color:var(--amber)}
+  .tslot svg{width:19px;height:19px}
+  .tslot.empty{border-style:dashed;opacity:.45}
+
+  /* ============ THEATRE PICKER ============ */
+  #picker-backdrop{
+    position:fixed;inset:0;background:rgba(5,8,12,.7);display:none;
+    z-index:50;align-items:center;justify-content:center;
+  }
+  #picker-backdrop.open{display:flex}
+  #picker{
+    background:var(--void-2);border:1px solid var(--line);padding:18px 20px;
+    max-width:430px;width:92%;
+  }
+  #picker h2{font-size:13px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:12px;border-bottom:1px solid #2a3a4c;padding-bottom:6px}
+  .picker-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}
+  .pick{
+    display:flex;align-items:center;gap:10px;padding:7px 9px;border:1px solid transparent;
+    border-radius:2px;font:600 12px 'Rajdhani';letter-spacing:.1em;text-transform:uppercase;
+    text-align:left;color:var(--line);
+  }
+  .pick:hover{border-color:var(--line-dim);background:var(--panel)}
+  .pick .ticon{
+    flex:0 0 30px;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line);
+    display:grid;place-items:center;background:var(--void)
+  }
+  .pick .ticon svg{width:19px;height:19px}
+  .pick.clear{grid-column:1/-1;justify-content:center;color:var(--slot)}
+
+  /* ============ LEGEND ============ */
+  #legend{
+    position:fixed;right:14px;bottom:14px;z-index:30;
+    background:var(--void-2);border:1px solid #2a3a4c;padding:10px 14px;
+    max-width:330px;
+  }
+  #legend summary{
+    cursor:pointer;font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--line);list-style:none;
+  }
+  #legend summary::before{content:"▸ "}
+  #legend[open] summary::before{content:"▾ "}
+  .legend-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px 16px;margin-top:10px}
+  .legend-grid div{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+  .legend-grid svg{width:17px;height:17px;flex:0 0 17px}
+  .legend-help{margin-top:10px;padding-top:8px;border-top:1px solid #2a3a4c;font-size:11px;color:var(--slot);letter-spacing:.04em;line-height:1.5}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none!important}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title">
+    <h1>Vespator Front Campaign</h1>
+    <small>Interactive theatre map</small>
+  </div>
+
+  <div class="track">
+    <div class="track-label"><span>Campaign track</span><span id="track-readout">—</span></div>
+    <div class="track-boxes" id="track"></div>
+    <div class="track-ticks"><span>1</span><span>5</span><span>10</span><span>15</span><span>20</span><span>25</span><span>30</span><span>35</span><span>40</span><span>45</span><span>50</span><span>55</span></div>
+  </div>
+
+  <div class="alliances" id="alliances"></div>
+
+  <div class="toolbar">
+    <button class="tbtn" id="zoom-out" title="Zoom out">−</button>
+    <button class="tbtn" id="zoom-in" title="Zoom in">+</button>
+    <button class="tbtn" id="zoom-fit" title="Fit map to window">Fit</button>
+    <button class="tbtn" id="reset" title="Clear all markers">Reset</button>
+    <span class="save-note" id="save-note"></span>
+  </div>
+</header>
+
+<div id="viewport">
+  <div id="stage">
+    <svg id="stars"></svg>
+    <svg id="lines"></svg>
+    <!-- planet cards injected here -->
+  </div>
+</div>
+
+<details id="legend">
+  <summary>Theatres reference &amp; help</summary>
+  <div class="legend-grid" id="legend-grid"></div>
+  <div class="legend-help">
+    <b>Power levels:</b> click a cell — each column is one alliance. Click again to clear.<br>
+    <b>Infrastructure:</b> click a slot to cycle which alliance built there.<br>
+    <b>Theatres:</b> click an icon to change it.<br>
+    <b>Track:</b> click a box to log campaign progress.
+  </div>
+</details>
+
+<div id="picker-backdrop">
+  <div id="picker" role="dialog" aria-label="Select theatre">
+    <h2 id="picker-title">Select theatre</h2>
+    <div class="picker-grid" id="picker-grid"></div>
+  </div>
+</div>
+
+<script>
+/* ================= DATA ================= */
+
+const THEATRES = {
+  delvesite : 'Delvesite Facility',
+  spaceport : 'Spaceport',
+  habsprawl : 'Hab Sprawl',
+  xenoflora : 'Xenoflora Jungle',
+  forge     : 'Forge Complex',
+  deadlands : 'Dead Lands',
+  desolate  : 'Desolate Wastes',
+  radzone   : 'Rad Zone',
+  tomb      : 'Tomb Complex',
+};
+
+/* Simple original glyphs for each theatre (24x24, stroke = currentColor) */
+const GLYPHS = {
+  delvesite: `<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor"/>
+    <g stroke="currentColor" stroke-width="1.6">
+      <line x1="12" y1="4" x2="12" y2="20"/><line x1="4" y1="12" x2="20" y2="12"/>
+      <line x1="6.3" y1="6.3" x2="17.7" y2="17.7"/><line x1="17.7" y1="6.3" x2="6.3" y2="17.7"/>
+    </g><circle cx="12" cy="12" r="2.6" fill="currentColor"/>`,
+  spaceport: `<polygon points="12,3 19.8,7.5 19.8,16.5 12,21 4.2,16.5 4.2,7.5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    <polygon points="12,7 16.3,9.5 16.3,14.5 12,17 7.7,14.5 7.7,9.5" fill="currentColor"/>`,
+  habsprawl: `<path d="M12 2 L14 8 H13 L16 14 H15 L18 21 H6 L9 14 H8 L11 8 H10 Z" fill="currentColor"/>
+    <line x1="12" y1="2" x2="12" y2="0.5" stroke="currentColor" stroke-width="1.4"/>`,
+  xenoflora: `<path d="M12 21 C12 14 12 9 12 4" stroke="currentColor" stroke-width="1.7" fill="none"/>
+    <path d="M12 8 C9 8 6.5 6.5 6 3.5 C9.5 3.5 11.5 5 12 8 Z" fill="currentColor"/>
+    <path d="M12 13 C15 13 17.5 11.5 18 8.5 C14.5 8.5 12.5 10 12 13 Z" fill="currentColor"/>
+    <path d="M12 17 C9.5 17 7.6 15.8 7.2 13.4 C10 13.4 11.6 14.7 12 17 Z" fill="currentColor"/>`,
+  forge: `<polygon points="12,5.5 20.5,20 3.5,20" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    <path d="M7.5 7.5 A6 6 0 0 1 16.5 7.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="1.8 1.6"/>
+    <circle cx="12" cy="15.5" r="2.4" fill="currentColor"/>`,
+  deadlands: `<path d="M12 3.5 C7.8 3.5 5 6.5 5 10.2 C5 12.7 6.3 14.6 8.2 15.7 L8.2 18.5 H15.8 L15.8 15.7 C17.7 14.6 19 12.7 19 10.2 C19 6.5 16.2 3.5 12 3.5 Z" fill="currentColor"/>
+    <circle cx="9.2" cy="10.4" r="1.7" fill="var(--void-2,#0e1520)"/>
+    <circle cx="14.8" cy="10.4" r="1.7" fill="var(--void-2,#0e1520)"/>
+    <rect x="9" y="18.5" width="6" height="2.2" fill="currentColor"/>`,
+  desolate: `<polygon points="4,3 8,3 6,6.4" fill="currentColor"/>
+    <polygon points="16,3 20,3 18,6.4" fill="currentColor"/>
+    <path d="M12 7 C8.6 7 6.4 9.3 6.4 12.2 C6.4 14.2 7.4 15.7 8.9 16.6 L8.9 19 H15.1 L15.1 16.6 C16.6 15.7 17.6 14.2 17.6 12.2 C17.6 9.3 15.4 7 12 7 Z" fill="currentColor"/>
+    <circle cx="9.9" cy="12.4" r="1.4" fill="var(--void-2,#0e1520)"/>
+    <circle cx="14.1" cy="12.4" r="1.4" fill="var(--void-2,#0e1520)"/>`,
+  radzone: `<polygon points="3.5,4 20.5,4 12,21" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    <path d="M12 6.2 C9.6 6.2 8 7.9 8 10 C8 11.4 8.7 12.5 9.8 13.2 L9.8 15 H14.2 L14.2 13.2 C15.3 12.5 16 11.4 16 10 C16 7.9 14.4 6.2 12 6.2 Z" fill="currentColor"/>
+    <circle cx="10.4" cy="10.1" r="1.1" fill="var(--void-2,#0e1520)"/>
+    <circle cx="13.6" cy="10.1" r="1.1" fill="var(--void-2,#0e1520)"/>`,
+  tomb: `<path d="M8 3.5 C9.8 3.5 10.4 5 10.4 7 L10.4 19 C10.4 20.2 9.6 21 8 21 C6.4 21 5.6 20.2 5.6 19 L5.6 7 C5.6 5 6.2 3.5 8 3.5 Z" fill="currentColor"/>
+    <path d="M16 3.5 C17.8 3.5 18.4 5 18.4 7 L18.4 19 C18.4 20.2 17.6 21 16 21 C14.4 21 13.6 20.2 13.6 19 L13.6 7 C13.6 5 14.2 3.5 16 3.5 Z" fill="currentColor"/>`,
+};
+
+/* Alliance marker shapes (white on coloured cell), matching the rulebook stickers */
+const MARKERS = {
+  a1: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7.5" fill="#fff"/></svg>`,
+  a2: `<svg viewBox="0 0 24 24"><rect x="6.4" y="6.4" width="11.2" height="11.2" fill="#fff" transform="rotate(45 12 12)"/></svg>`,
+  a3: `<svg viewBox="0 0 24 24"><polygon points="4.5,6 19.5,6 12,19" fill="#fff"/></svg>`,
+};
+/* Infrastructure glyph: simple cog, drawn dark on the alliance colour */
+const INFRA_GLYPH = `<svg viewBox="0 0 24 24"><g fill="currentColor">
+  <circle cx="12" cy="12" r="5"/>
+  <g stroke="currentColor" stroke-width="2.6">
+    <line x1="12" y1="3" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="21"/>
+    <line x1="3" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="21" y2="12"/>
+    <line x1="5.6" y1="5.6" x2="7.8" y2="7.8"/><line x1="16.2" y1="16.2" x2="18.4" y2="18.4"/>
+    <line x1="18.4" y1="5.6" x2="16.2" y2="7.8"/><line x1="7.8" y1="16.2" x2="5.6" y2="18.4"/>
+  </g></g>
+  <circle cx="12" cy="12" r="2" fill="var(--void-2,#0e1520)"/></svg>`;
+
+/* Planet roster: position = globe centre on the 2048x1520 stage */
+const PLANETS = [
+  {id:'noralus',   name:'Noralus',          system:'Gorund System',      x:385,  y:380,  infra:3, theatres:['radzone','delvesite','habsprawl']},
+  {id:'felgris',   name:'Felgris Secundas', system:'Osymanden System',   x:1175, y:200,  infra:3, theatres:['xenoflora','forge']},
+  {id:'masnet',    name:'Masnet',           system:'Kasphos System',     x:838,  y:415,  infra:2, theatres:['deadlands','spaceport','habsprawl']},
+  {id:'tarkad',    name:'Tarkad Vindix',    system:'Reiya System',       x:1438, y:445,  infra:3, theatres:['desolate','radzone']},
+  {id:'yawardet',  name:'Yawardet',         system:'Esvar System',       x:1858, y:515,  infra:2, theatres:['deadlands','tomb','habsprawl']},
+  {id:'kryndaer',  name:'Kryndaer',         system:'Zur Mortalis System',x:712,  y:715,  infra:2, theatres:['tomb','delvesite','xenoflora']},
+  {id:'karabas',   name:'Karabas',          system:'Salen System',       x:240,  y:810,  infra:4, theatres:['forge','delvesite']},
+  {id:'novamagnor',name:'Novamagnor',       system:'Heliodras System',   x:1185, y:825,  infra:2, theatres:['tomb','spaceport']},
+  {id:'astarthem', name:'Astarthem',        system:'Orphos System',      x:1638, y:890,  infra:4, theatres:['forge','desolate']},
+  {id:'caltus',    name:'Caltus Novem',     system:'Vespator System',    x:782,  y:1190, infra:3, theatres:['deadlands','forge','xenoflora']},
+  {id:'ikaron',    name:'Ikaron Prime',     system:'Ikaron System',      x:1838, y:1235, infra:3, theatres:['habsprawl','radzone','delvesite']},
+  {id:'marvinius', name:'Marvinius',        system:'Diodecis System',    x:435,  y:1300, infra:3, theatres:['radzone','habsprawl']},
+  {id:'vilkus',    name:'Vilkus Decima',    system:'Vilkum System',      x:1080, y:1320, infra:2, theatres:['desolate','spaceport']},
+];
+
+/* Connections traced from the printed map (18 routes) */
+const CONNECTIONS = [
+  ['noralus','masnet'],   ['noralus','karabas'],   ['noralus','kryndaer'],
+  ['masnet','felgris'],   ['masnet','tarkad'],     ['felgris','tarkad'],
+  ['tarkad','yawardet'],  ['tarkad','novamagnor'],
+  ['yawardet','astarthem'],['yawardet','ikaron'],
+  ['karabas','kryndaer'], ['kryndaer','caltus'],
+  ['novamagnor','astarthem'],['novamagnor','ikaron'],
+  ['caltus','marvinius'], ['caltus','vilkus'],     ['caltus','ikaron'],
+  ['marvinius','vilkus'],
+];
+
+const ALLIANCES = ['a1','a2','a3'];
+const STORE_KEY = 'vespator-campaign-v1';
+
+/* ================= STATE ================= */
+
+function freshState(){
+  const s = {turn:0, names:{a1:'Alliance I', a2:'Alliance II', a3:'Alliance III'}, planets:{}};
+  for(const p of PLANETS){
+    s.planets[p.id] = {
+      power:{a1:null,a2:null,a3:null},
+      infra:Array(p.infra).fill(null),
+      theatres:[...p.theatres],
+    };
+  }
+  return s;
+}
+let state = freshState();
+let memoryOnly = true;
+
+async function loadState(){
+  try{
+    if(window.storage){
+      const r = await window.storage.get(STORE_KEY);
+      if(r && r.value){
+        const saved = JSON.parse(r.value);
+        const base = freshState();
+        state = {...base, ...saved, names:{...base.names, ...(saved.names||{})}, planets:{...base.planets}};
+        for(const id in base.planets){
+          if(saved.planets && saved.planets[id]) state.planets[id] = {...base.planets[id], ...saved.planets[id]};
+        }
+      }
+      memoryOnly = false;
+    }
+  }catch(e){ memoryOnly = !window.storage; }
+}
+let saveTimer = null;
+function scheduleSave(){
+  note('…');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{
+    if(memoryOnly){ note('unsaved'); return; }
+    try{ await window.storage.set(STORE_KEY, JSON.stringify(state)); note('saved'); }
+    catch(e){ note('unsaved'); }
+  }, 400);
+}
+function note(t){ document.getElementById('save-note').textContent = t; }
+
+/* ================= RENDER ================= */
+
+const stage = document.getElementById('stage');
+
+function glyphSvg(key, extra=''){ return `<svg viewBox="0 0 24 24" ${extra}>${GLYPHS[key]}</svg>`; }
+
+function buildStars(){
+  const svg = document.getElementById('stars');
+  let dots = '';
+  for(let i=0;i<420;i++){
+    const x=Math.random()*2048, y=Math.random()*1520, r=Math.random()*1.1+0.2, o=(Math.random()*.5+.15).toFixed(2);
+    dots += `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${r.toFixed(1)}" fill="#cfd9e4" opacity="${o}"/>`;
+  }
+  svg.setAttribute('viewBox','0 0 2048 1520');
+  svg.innerHTML = dots;
+}
+
+function buildLines(){
+  const svg = document.getElementById('lines');
+  svg.setAttribute('viewBox','0 0 2048 1520');
+  const pos = Object.fromEntries(PLANETS.map(p=>[p.id,[p.x,p.y]]));
+  svg.innerHTML = CONNECTIONS.map(([a,b])=>{
+    const [x1,y1]=pos[a],[x2,y2]=pos[b];
+    return `<path d="M${x1} ${y1} L${x2} ${y2}"/>`;
+  }).join('');
+}
+
+function ringsSvg(){
+  const rr=[16,34,52,72,92];
+  return `<svg class="rings" width="240" height="240" viewBox="0 0 240 240" style="left:56px;top:1px">
+    ${rr.map((r,i)=>`<circle cx="120" cy="120" r="${r}" fill="none" stroke="#d7e0e8" stroke-width="0.8" ${i%2?`stroke-dasharray="4 4"`:''} opacity="${0.9-i*0.13}"/>`).join('')}
+    <text x="120" y="231" text-anchor="middle" fill="#d7e0e8" font-size="11" font-family="Rajdhani" letter-spacing="3" opacity=".9">ORBIT LOCATION</text>
+  </svg>`;
+}
+
+function buildPlanets(){
+  for(const p of PLANETS){
+    const el = document.createElement('div');
+    el.className = 'planet';
+    el.id = 'planet-'+p.id;
+    el.style.left = (p.x-176)+'px';
+    el.style.top  = (p.y-121)+'px';
+    el.innerHTML = `
+      ${ringsSvg()}
+      <div class="nameplate"><b>${p.name}</b><span>[${p.system}]</span></div>
+      <div class="globe"></div>
+      <div class="power">
+        <div class="sec-label">Power levels</div>
+        <div class="pgrid">
+          ${[4,3,2,1,0].map(lv=>`
+            <div class="prow-num">${lv}</div>
+            ${ALLIANCES.map(a=>`<button class="pcell" data-planet="${p.id}" data-alliance="${a}" data-level="${lv}" aria-label="${p.name}: set level ${lv}"></button>`).join('')}
+          `).join('')}
+        </div>
+      </div>
+      <div class="infra">
+        <div class="sec-label">Infrastructure<br>locations</div>
+        <div class="infra-slots">
+          ${Array.from({length:p.infra},(_,i)=>`<button class="islot empty" data-planet="${p.id}" data-slot="${i}" aria-label="${p.name}: infrastructure slot ${i+1}">${INFRA_GLYPH}</button>`).join('')}
+        </div>
+      </div>
+      <div class="theatres">
+        <div class="sec-label">Theatres</div>
+        <div class="t-slots">
+          ${p.theatres.map((t,i)=>`<button class="tslot" data-planet="${p.id}" data-tslot="${i}"></button>`).join('')}
+        </div>
+      </div>`;
+    stage.appendChild(el);
+  }
+}
+
+function buildTrack(){
+  const el = document.getElementById('track');
+  el.innerHTML = Array.from({length:55},(_,i)=>`<button data-turn="${i+1}" aria-label="Set campaign track to ${i+1}"></button>`).join('');
+}
+
+function buildAlliances(){
+  const el = document.getElementById('alliances');
+  el.innerHTML = ALLIANCES.map(a=>`
+    <div class="alliance">
+      <span class="chip" style="background:var(--${a})">${MARKERS[a]}</span>
+      <input data-name="${a}" maxlength="14" aria-label="Rename alliance">
+    </div>`).join('');
+}
+
+function buildLegend(){
+  document.getElementById('legend-grid').innerHTML =
+    Object.entries(THEATRES).map(([k,n])=>`<div>${glyphSvg(k)}<span>${n}</span></div>`).join('');
+}
+
+/* ================= PAINT (state -> DOM) ================= */
+
+function paint(){
+  /* track */
+  document.querySelectorAll('#track button').forEach(b=>{
+    const t = +b.dataset.turn;
+    b.classList.toggle('filled', t < state.turn);
+    b.classList.toggle('current', t === state.turn);
+  });
+  document.getElementById('track-readout').textContent = state.turn ? state.turn : '—';
+
+  /* alliance names */
+  document.querySelectorAll('#alliances input').forEach(i=>{
+    if(document.activeElement !== i) i.value = state.names[i.dataset.name];
+  });
+
+  for(const p of PLANETS){
+    const ps = state.planets[p.id];
+    /* power cells */
+    document.querySelectorAll(`#planet-${p.id} .pcell`).forEach(c=>{
+      const a=c.dataset.alliance, lv=+c.dataset.level;
+      const on = ps.power[a]===lv;
+      c.classList.toggle(a,on);
+      c.innerHTML = on ? MARKERS[a] : '';
+      c.title = on ? `${state.names[a]} — power level ${lv}` : `Set ${state.names[a]} to level ${lv}`;
+    });
+    /* infra */
+    document.querySelectorAll(`#planet-${p.id} .islot`).forEach(s=>{
+      const owner = ps.infra[+s.dataset.slot];
+      s.classList.remove('a1','a2','a3','empty');
+      if(owner){ s.classList.add(owner); s.title = `Infrastructure — ${state.names[owner]} (click to cycle)`; }
+      else { s.classList.add('empty'); s.title = 'Empty location (click to build)'; }
+    });
+    /* theatres */
+    document.querySelectorAll(`#planet-${p.id} .tslot`).forEach(s=>{
+      const key = ps.theatres[+s.dataset.tslot];
+      if(key){ s.classList.remove('empty'); s.innerHTML = glyphSvg(key); s.title = THEATRES[key]+' (click to change)'; }
+      else { s.classList.add('empty'); s.innerHTML=''; s.title = 'No theatre (click to set)'; }
+    });
+  }
+}
+
+/* ================= INTERACTIONS ================= */
+
+document.addEventListener('click', e=>{
+  const cell = e.target.closest('.pcell');
+  if(cell){
+    const ps = state.planets[cell.dataset.planet];
+    const a = cell.dataset.alliance, lv = +cell.dataset.level;
+    ps.power[a] = (ps.power[a]===lv) ? null : lv;
+    paint(); scheduleSave(); return;
+  }
+  const slot = e.target.closest('.islot');
+  if(slot){
+    const ps = state.planets[slot.dataset.planet];
+    const i = +slot.dataset.slot;
+    const order = [null,'a1','a2','a3'];
+    ps.infra[i] = order[(order.indexOf(ps.infra[i])+1)%order.length];
+    paint(); scheduleSave(); return;
+  }
+  const ts = e.target.closest('.tslot');
+  if(ts){ openPicker(ts.dataset.planet, +ts.dataset.tslot); return; }
+
+  const tb = e.target.closest('#track button');
+  if(tb){
+    const t = +tb.dataset.turn;
+    state.turn = (state.turn===t) ? 0 : t;
+    paint(); scheduleSave(); return;
+  }
+});
+
+document.getElementById('alliances').addEventListener('input', e=>{
+  const i = e.target.closest('input[data-name]');
+  if(i){ state.names[i.dataset.name] = i.value || i.dataset.name.toUpperCase(); paint0names(); scheduleSave(); }
+});
+function paint0names(){ /* refresh titles without clobbering the focused input */ 
+  paint();
+}
+
+document.getElementById('reset').addEventListener('click', ()=>{
+  if(confirm('Clear all markers, infrastructure and the campaign track? Theatres return to the printed defaults.')){
+    state = freshState(); paint(); scheduleSave();
+  }
+});
+
+/* theatre picker */
+let pickTarget = null;
+const backdrop = document.getElementById('picker-backdrop');
+function openPicker(planetId, idx){
+  pickTarget = {planetId, idx};
+  const p = PLANETS.find(x=>x.id===planetId);
+  document.getElementById('picker-title').textContent = `${p.name} — Theatre ${idx+1}`;
+  document.getElementById('picker-grid').innerHTML =
+    Object.entries(THEATRES).map(([k,n])=>
+      `<button class="pick" data-key="${k}"><span class="ticon">${glyphSvg(k)}</span>${n}</button>`).join('') +
+    `<button class="pick clear" data-key="">— Clear slot —</button>`;
+  backdrop.classList.add('open');
+}
+backdrop.addEventListener('click', e=>{
+  const b = e.target.closest('.pick');
+  if(b){
+    state.planets[pickTarget.planetId].theatres[pickTarget.idx] = b.dataset.key || null;
+    paint(); scheduleSave();
+    backdrop.classList.remove('open');
+  } else if(e.target===backdrop){
+    backdrop.classList.remove('open');
+  }
+});
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') backdrop.classList.remove('open'); });
+
+/* zoom */
+let zoom = 1;
+const viewport = document.getElementById('viewport');
+function applyZoom(){
+  stage.style.transform = `scale(${zoom})`;
+  stage.style.width = '2048px';
+  stage.style.height = '1520px';
+  /* keep the scroll area correct when scaling */
+  stage.style.marginRight = `${2048*(zoom-1)}px`;
+  stage.style.marginBottom = `${1520*(zoom-1)}px`;
+}
+function fit(){
+  zoom = Math.min((viewport.clientWidth-8)/2048, (viewport.clientHeight-8)/1520);
+  zoom = Math.max(0.3, Math.min(zoom, 1.6));
+  applyZoom();
+}
+document.getElementById('zoom-in').onclick  = ()=>{ zoom=Math.min(1.8, zoom+0.12); applyZoom(); };
+document.getElementById('zoom-out').onclick = ()=>{ zoom=Math.max(0.3, zoom-0.12); applyZoom(); };
+document.getElementById('zoom-fit').onclick = fit;
+
+/* ================= BOOT ================= */
+(async function(){
+  buildStars(); buildLines(); buildPlanets(); buildTrack(); buildAlliances(); buildLegend();
+  await loadState();
+  paint();
+  note(memoryOnly ? 'unsaved' : 'saved');
+  /* default: fit width so the whole front is visible */
+  zoom = Math.min(1, (viewport.clientWidth-8)/2048);
+  applyZoom();
+})();
+</script>
+</body>
+</html>
