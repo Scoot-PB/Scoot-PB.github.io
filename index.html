@@ -231,8 +231,8 @@
 
 <header>
   <div class="title">
-    <h1>Vespator Front Campaign</h1>
-    <small>Interactive theatre map</small>
+    <h1>Craw's Fire</h1>
+    <small>Crossfire Interactive Map</small>
   </div>
 
   <div class="track">
@@ -380,7 +380,7 @@ const STORE_KEY = 'vespator-campaign-v1';
 /* ================= STATE ================= */
 
 function freshState(){
-  const s = {turn:0, names:{a1:'Alliance I', a2:'Alliance II', a3:'Alliance III'}, planets:{}};
+  const s = {turn:0, names:{a1:'Raiders', a2:'Liberators', a3:'Oppressors'}, planets:{}};
   for(const p of PLANETS){
     s.planets[p.id] = {
       power:{a1:null,a2:null,a3:null},
