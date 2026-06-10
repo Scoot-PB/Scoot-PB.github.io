@@ -90,7 +90,15 @@
   .save-note{font-size:10px;letter-spacing:.15em;color:var(--line-dim);text-transform:uppercase;min-width:64px;text-align:right}
 
   /* ============ MAP VIEWPORT ============ */
-  #viewport{flex:1;overflow:auto;position:relative;background:var(--void)}
+ #viewport {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+  background: transparent;
+  scrollbar-width: none; /* Firefox */
+}
+#viewport::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 #stage {
   position: relative;
   width: 2048px;
