@@ -24,12 +24,17 @@
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
   body{
-    background:var(--void);
-    color:var(--line);
-    font-family:'Rajdhani',system-ui,sans-serif;
-    overflow:hidden;
-    display:flex;flex-direction:column;
-  }
+  background:var(--void);
+  color:var(--line);
+  font-family:'Rajdhani',system-ui,sans-serif;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+
+  justify-content:center;   /* vertical centering */
+  align-items:center;       /* horizontal centering */
+}
+
   button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
   button:focus-visible, [tabindex]:focus-visible, input:focus-visible{
     outline:2px solid var(--amber);outline-offset:2px;
@@ -87,14 +92,15 @@
 
   /* ============ MAP VIEWPORT ============ */
   #viewport{flex:1;overflow:auto;position:relative;background:var(--void)}
-  #stage{
-    position:relative;width:2048px;height:1520px;
-    transform-origin:0 0;
-    background:
-      radial-gradient(ellipse 900px 500px at 70% 40%, rgba(64,86,118,.16), transparent 60%),
-      radial-gradient(ellipse 700px 600px at 25% 75%, rgba(90,70,110,.10), transparent 60%),
-      var(--void);
-  }
+#stage {
+  position: relative;
+  width: 2048px;
+  height: 1520px;
+  transform-origin: 0 0;
+
+  /* Replace with your galaxy image */
+  background: url("https://c4.wallpaperflare.com/wallpaper/359/603/718/galaxy-pictures-wallpaper-preview.jpg") center/cover no-repeat, var(--void);
+}
   #stars,#lines{position:absolute;inset:0;width:100%;height:100%}
   #lines path{stroke:var(--line);stroke-width:1.4;stroke-dasharray:7 7;fill:none;opacity:.65}
 
