@@ -23,15 +23,16 @@
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
-  body {
-  background: url("https://github.com/Scoot-PB/Scoot-PB.github.io/blob/main/BCO.f8991010-3591-45fa-85bf-a79929bfe6e0.png?raw=true") center/cover no-repeat fixed, var(--void);
-  color: var(--line);
-  font-family: 'Rajdhani', system-ui, sans-serif;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  body{
+  background:var(--void);
+  color:var(--line);
+  font-family:'Rajdhani',system-ui,sans-serif;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+
+  justify-content:center;   /* vertical centering */
+  align-items:center;       /* horizontal centering */
 }
 
   button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
@@ -90,21 +91,15 @@
   .save-note{font-size:10px;letter-spacing:.15em;color:var(--line-dim);text-transform:uppercase;min-width:64px;text-align:right}
 
   /* ============ MAP VIEWPORT ============ */
- #viewport {
-  flex: 1;
-  overflow: auto;
-  position: relative;
-  background: transparent;
-  scrollbar-width: none; /* Firefox */
-}
-#viewport::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
+  #viewport{flex:1;overflow:auto;position:relative;background:var(--void)}
 #stage {
   position: relative;
   width: 2048px;
   height: 1520px;
   transform-origin: 0 0;
-  background: transparent;
+
+  /* Replace with your galaxy image */
+  background: url("https://copilot.microsoft.com/th/id/BCO.d004b291-93bf-4bf5-a04a-1a9e46fe98c6.png") center/cover no-repeat, var(--void);
 }
   #stars,#lines{position:absolute;inset:0;width:100%;height:100%}
   #lines path{stroke:var(--line);stroke-width:1.4;stroke-dasharray:7 7;fill:none;opacity:.65}
