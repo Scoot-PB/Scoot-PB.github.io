@@ -347,31 +347,59 @@ const INFRA_GLYPH = `<svg viewBox="0 0 24 24"><g fill="currentColor">
 
 /* Planet roster: position = globe centre on the 2048x1520 stage */
 const PLANETS = [
-  {id:'noralus',   name:'Noralus',          system:'Gorund System',      x:385,  y:380,  infra:3, theatres:['radzone','delvesite','habsprawl']},
-  {id:'felgris',   name:'Felgris Secundas', system:'Osymanden System',   x:1175, y:200,  infra:3, theatres:['xenoflora','forge']},
-  {id:'masnet',    name:'Masnet',           system:'Kasphos System',     x:838,  y:415,  infra:2, theatres:['deadlands','spaceport','habsprawl']},
-  {id:'tarkad',    name:'Tarkad Vindix',    system:'Reiya System',       x:1438, y:445,  infra:3, theatres:['desolate','radzone']},
-  {id:'yawardet',  name:'Yawardet',         system:'Esvar System',       x:1858, y:515,  infra:2, theatres:['deadlands','tomb','habsprawl']},
-  {id:'kryndaer',  name:'Kryndaer',         system:'Zur Mortalis System',x:712,  y:715,  infra:2, theatres:['tomb','delvesite','xenoflora']},
-  {id:'karabas',   name:'Karabas',          system:'Salen System',       x:240,  y:810,  infra:4, theatres:['forge','delvesite']},
-  {id:'novamagnor',name:'Novamagnor',       system:'Heliodras System',   x:1185, y:825,  infra:2, theatres:['tomb','spaceport']},
-  {id:'astarthem', name:'Astarthem',        system:'Orphos System',      x:1638, y:890,  infra:4, theatres:['forge','desolate']},
-  {id:'caltus',    name:'Caltus Novem',     system:'Vespator System',    x:782,  y:1190, infra:3, theatres:['deadlands','forge','xenoflora']},
-  {id:'ikaron',    name:'Ikaron Prime',     system:'Ikaron System',      x:1838, y:1235, infra:3, theatres:['habsprawl','radzone','delvesite']},
-  {id:'marvinius', name:'Marvinius',        system:'Diodecis System',    x:435,  y:1300, infra:3, theatres:['radzone','habsprawl']},
-  {id:'vilkus',    name:'Vilkus Decima',    system:'Vilkum System',      x:1080, y:1320, infra:2, theatres:['desolate','spaceport']},
+  {id:'Good Lootin'',   name:'Good Lootin'',       x:385,  y:380,  infra:3, theatres:['radzone','delvesite','habsprawl']},
+  {id:'Waagh! World',   name:'Waagh! World',    x:1175, y:200,  infra:3, theatres:['xenoflora','forge']},
+  {id:'Krump',    name:'Krump',      x:838,  y:415,  infra:2, theatres:['deadlands','spaceport','habsprawl']},
+  {id:'Mad Maxx',    name:'Mad Maxx',        x:1438, y:445,  infra:3, theatres:['desolate','radzone']},
+  {id:'Da Big Rokk',  name:'Da Big Rokk',     x:1858, y:515,  infra:2, theatres:['deadlands','tomb','habsprawl']},
+  {id:'Dakka World',  name:'Dakka World', x:712,  y:715,  infra:2, theatres:['tomb','delvesite','xenoflora']},
+  {id:'Bad Lootin'',   name:'Bad Lootin'',             x:240,  y:810,  infra:4, theatres:['forge','delvesite']},
+  {id:'Sept SkooTah',name:'Sept SkooTah',         x:1185, y:825,  infra:2, theatres:['tomb','spaceport']},
+  {id:'Da Smol Rokk', name:'Da Smol Rokk',             x:1638, y:890,  infra:4, theatres:['forge','desolate']},
+  {id:'Dakka Too',    name:'Dakka Too',       x:782,  y:1190, infra:3, theatres:['deadlands','forge','xenoflora']},
+  {id:'Severahs Grasp',    name:'Severahs Grasp',          x:1838, y:1235, infra:3, theatres:['habsprawl','radzone','delvesite']},
+  {id:'Da Spooky', name:'Da Spooky',            x:435,  y:1300, infra:3, theatres:['radzone','habsprawl']},
+  {id:'Tau TBC',    name:'Tau TBC',       x:1080, y:1320, infra:2, theatres:['desolate','spaceport']},
 ];
 
 /* Connections traced from the printed map (18 routes) */
 const CONNECTIONS = [
-  ['noralus','masnet'],   ['noralus','karabas'],   ['noralus','kryndaer'],
-  ['masnet','felgris'],   ['masnet','tarkad'],     ['felgris','tarkad'],
-  ['tarkad','yawardet'],  ['tarkad','novamagnor'],
-  ['yawardet','astarthem'],['yawardet','ikaron'],
-  ['karabas','kryndaer'], ['kryndaer','caltus'],
-  ['novamagnor','astarthem'],['novamagnor','ikaron'],
-  ['caltus','marvinius'], ['caltus','vilkus'],     ['caltus','ikaron'],
-  ['marvinius','vilkus'],
+  ["Severahs Grasp", "Da Small Rokk"],
+  ["Severahs Grasp", "Sept Skoo'tah"],
+  ["Severahs Grasp", "Dakka Too"],
+
+  ["Da Big Rokk", "Da Small Rokk"],
+  ["Da Big Rokk", "Sept Skootah"],
+  ["Da Big Rokk", "Mad Maxx"],
+  ["Da Big Rokk", "Waagh! World"],
+
+  ["Mad Maxx", "Sept Skootah"],
+  ["Mad Maxx", "Dakka Wun"],
+  ["Mad Maxx", "Krump"],
+  ["Mad Maxx", "Waagh! World"],
+
+  ["Krump", "Sept Skootah"],
+  ["Krump", "Dakka Wun"],
+  ["Krump", "Good Lootin'"],
+  ["Krump", "Waagh! World"],
+
+  ["Good Lootin'", "Sept Skootah"],
+  ["Good Lootin'", "Bad Lootin'"],
+  ["Good Lootin'", "Dakka Wun"],
+  ["Good Lootin'", "Da Spooky"],
+
+  ["Bad Lootin'", "Dakka Wun"],
+  ["Bad Lootin'", "Da Spooky"],
+
+  ["Dakka Wun", "Dakka Too"],
+
+  ["Sept Skootah", "Tau TBC"],
+  ["Sept Skootah", "Da Small Rokk"],
+
+  ["Dakka Too", "Da Spooky"],
+  ["Dakka Too", "Tau TBC"],
+
+  ["Da Spooky", "Tau TBC"]
 ];
 
 const ALLIANCES = ['a1','a2','a3'];
