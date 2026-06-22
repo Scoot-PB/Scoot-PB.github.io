@@ -248,6 +248,7 @@
     <button class="tbtn" id="zoom-in" title="Zoom in">+</button>
     <button class="tbtn" id="zoom-fit" title="Fit map to window">Fit</button>
     <button class="tbtn" id="reset" title="Clear all markers">Reset</button>
+    <button class="tbtn" id="export-pdf">Export PDF</button>
     <span class="save-note" id="save-note"></span>
   </div>
 </header>
@@ -278,6 +279,8 @@
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 /* ================= DATA ================= */
 
@@ -797,6 +800,35 @@ document.getElementById('zoom-in').onclick  = ()=>{ zoom=Math.min(1.8, zoom+0.12
 document.getElementById('zoom-out').onclick = ()=>{ zoom=Math.max(0.3, zoom-0.12); applyZoom(); };
 document.getElementById('zoom-fit').onclick = fit;
 
+  document.getElementById('export-pdf').addEventListener('click', async () => {
+  const { jsPDF } = window.jspdf;
+
+  const oldZoom = zoom;
+  zoom = 1;
+  applyZoom();
+
+  const stageEl = document.getElementById('stage');
+
+  const canvas = await html2canvas(stageEl, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: '#0a0f16'
+  });
+
+  const imgData = canvas.toDataURL('image/png');
+
+  const pdf = new jsPDF({
+    orientation: 'landscape',
+    unit: 'px',
+    format: [canvas.width, canvas.height]
+  });
+
+  pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+  pdf.save('vespator-map.pdf');
+
+  zoom = oldZoom;
+  applyZoom();
+});
 /* ================= BOOT ================= */
 (async function(){
   buildStars(); buildLines(); buildPlanets(); buildTrack(); buildAlliances(); buildLegend();
