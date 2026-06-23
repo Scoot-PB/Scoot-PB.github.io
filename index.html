@@ -692,7 +692,14 @@ function paint(){
     document.querySelectorAll(`#planet-${p.id} .pcell`).forEach(c=>{
       const a=c.dataset.alliance, lv=+c.dataset.level;
       const on = ps.power[a]===lv;
-      c.classList.toggle(a,on);
+      c.classList.remove('a1','a2','a3');
+if (on) {
+  c.classList.add(a);
+  c.style.background = `var(--${a})`; // force colour
+} else {
+  c.style.background = '';
+}
+
       c.innerHTML = on ? MARKERS[a] : '';
       c.title = on ? `${state.names[a]} — power level ${lv}` : `Set ${state.names[a]} to level ${lv}`;
     });
