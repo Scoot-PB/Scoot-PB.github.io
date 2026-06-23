@@ -619,7 +619,7 @@ function buildPlanets(){
   for(const p of PLANETS){
     const el = document.createElement('div');
     el.className = 'planet';
-    el.id = 'planet-'+p.id;
+    el.id = planetElId(p.id);
     el.style.left = (p.x-176)+'px';
     el.style.top  = (p.y-121)+'px';
     el.innerHTML = `
@@ -689,7 +689,7 @@ function paint(){
   for(const p of PLANETS){
     const ps = state.planets[p.id];
     /* power cells */
-    document.querySelectorAll(`#planet-${p.id} .pcell`).forEach(c=>{
+    document.querySelectorAll(`#${planetElId(p.id)} .pcell`).forEach(c=>{
       const a=c.dataset.alliance, lv=+c.dataset.level;
       const on = ps.power[a]===lv;
       c.classList.remove('a1','a2','a3');
@@ -704,14 +704,14 @@ if (on) {
       c.title = on ? `${state.names[a]} — power level ${lv}` : `Set ${state.names[a]} to level ${lv}`;
     });
     /* infra */
-    document.querySelectorAll(`#planet-${p.id} .islot`).forEach(s=>{
+    document.querySelectorAll(`#${planetElId(p.id)} .islot`).forEach(s=>{
       const owner = ps.infra[+s.dataset.slot];
       s.classList.remove('a1','a2','a3','empty');
       if(owner){ s.classList.add(owner); s.title = `Infrastructure — ${state.names[owner]} (click to cycle)`; }
       else { s.classList.add('empty'); s.title = 'Empty location (click to build)'; }
     });
     /* theatres */
-    document.querySelectorAll(`#planet-${p.id} .tslot`).forEach(s=>{
+    document.querySelectorAll(`#${planetElId(p.id)} .tslot`).forEach(s=>{
       const key = ps.theatres[+s.dataset.tslot];
       if(key){ s.classList.remove('empty'); s.innerHTML = glyphSvg(key); s.title = THEATRES[key]+' (click to change)'; }
       else { s.classList.add('empty'); s.innerHTML=''; s.title = 'No theatre (click to set)'; }
