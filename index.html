@@ -528,7 +528,13 @@ function planetElId(id){
 /* ================= STATE ================= */
 
 function freshState(){
-  const s = {turn:0, names:{a1:'Raiders', a2:'Liberators', a3:'Oppressors'}, planets:{}};
+  const s = {
+    turn: 0,
+    track: Array(55).fill(null),
+    names:{a1:'Raiders', a2:'Liberators', a3:'Oppressors'},
+    planets:{}
+  };
+
   for(const p of PLANETS){
     s.planets[p.id] = {
       power:{a1:null,a2:null,a3:null},
@@ -536,6 +542,7 @@ function freshState(){
       theatres:[...p.theatres],
     };
   }
+
   return s;
 }
 let state = freshState();
@@ -676,7 +683,11 @@ function buildLegend(){
 /* ================= PAINT (state -> DOM) ================= */
 
 function paint(){
-  /* track */
+/* track */
+if (!Array.isArray(state.track)) {
+  state.track = Array(55).fill(null);
+}
+
 document.querySelectorAll('#track button').forEach(b=>{
   const i = +b.dataset.turn - 1;
   const owner = state.track[i];
@@ -685,12 +696,17 @@ document.querySelectorAll('#track button').forEach(b=>{
 
   if (owner){
     b.classList.add(owner);
-    b.innerHTML = MARKERS[owner]; // adds symbol
+    b.innerHTML = MARKERS[owner];
+    b.title = `Campaign track ${i + 1} — ${state.names[owner]}`;
   } else {
     b.innerHTML = '';
+    b.title = `Campaign track ${i + 1}`;
   }
 });
-  document.getElementById('track-readout').textContent = state.turn ? state.turn : '—';
+
+const marked = state.track.filter(Boolean).length;
+document.getElementById('track-readout').textContent = marked ? `${marked}/55` : '—';
+
 
   /* alliance names */
   document.querySelectorAll('#alliances input').forEach(i=>{
@@ -751,12 +767,19 @@ document.addEventListener('click', e=>{
   const ts = e.target.closest('.tslot');
   if(ts){ openPicker(ts.dataset.planet, +ts.dataset.tslot); return; }
 
-  const tb = e.target.closest('#track button');
-  if(tb){
-    const t = +tb.dataset.turn;
-    state.turn = (state.turn===t) ? 0 : t;
-    paint(); scheduleSave(); return;
-  }
+ const tb = e.target.closest('#track button');
+if(tb){
+  const i = +tb.dataset.turn - 1;
+
+  const order = [null, 'a1', 'a2', 'a3'];
+  const current = state.track[i];
+
+  state.track[i] = order[(order.indexOf(current) + 1) % order.length];
+
+  paint();
+  scheduleSave();
+  return;
+}
 });
 
 document.getElementById('alliances').addEventListener('input', e=>{
