@@ -63,6 +63,9 @@
     flex:1;height:16px;border:1px solid var(--line-dim);border-left:none;
     background:transparent;transition:background .12s;min-width:0;padding:0;
   }
+  #track button.a1{ background: var(--a1); }
+#track button.a2{ background: var(--a2); }
+#track button.a3{ background: var(--a3); }
   .track-boxes button:first-child{border-left:1px solid var(--line-dim)}
   .track-boxes button.filled{background:var(--line)}
   .track-boxes button.current{background:var(--amber)}
@@ -674,11 +677,19 @@ function buildLegend(){
 
 function paint(){
   /* track */
-  document.querySelectorAll('#track button').forEach(b=>{
-    const t = +b.dataset.turn;
-    b.classList.toggle('filled', t < state.turn);
-    b.classList.toggle('current', t === state.turn);
-  });
+document.querySelectorAll('#track button').forEach(b=>{
+  const i = +b.dataset.turn - 1;
+  const owner = state.track[i];
+
+  b.classList.remove('a1','a2','a3','filled','current');
+
+  if (owner){
+    b.classList.add(owner);
+    b.innerHTML = MARKERS[owner]; // adds symbol
+  } else {
+    b.innerHTML = '';
+  }
+});
   document.getElementById('track-readout').textContent = state.turn ? state.turn : '—';
 
   /* alliance names */
