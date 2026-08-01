@@ -102,7 +102,7 @@
   transform-origin: 0 0;
 
   /* Replace with your galaxy image */
-  background: url("https://copilot.microsoft.com/th/id/BCO.d004b291-93bf-4bf5-a04a-1a9e46fe98c6.png") center/cover no-repeat, var(--void);
+  background: url("https://github.com/Scoot-PB/Scoot-PB.github.io/blob/main/BCO.7ad04081-2617-4dca-8d5f-495acc40e750.png?raw=true") center/cover no-repeat, var(--void);
 }
   #stars,#lines{position:absolute;inset:0;width:100%;height:100%}
   #lines path{stroke:var(--line);stroke-width:1.4;stroke-dasharray:7 7;fill:none;opacity:.65}
@@ -168,20 +168,29 @@
   .islot svg{width:19px;height:19px;color:#0c1117}
   .islot.empty svg{display:none}
 
-  /* theatres */
+ /* theatres */
   .theatres{position:absolute;left:204px;top:128px}
   .t-slots{
     display:flex;gap:5px;background:linear-gradient(80deg,transparent,var(--panel) 12%);
     padding:6px 7px;border-radius:2px;
   }
-  .tslot{
-    width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line);
-    background:var(--void-2);display:grid;place-items:center;
-    transition:transform .1s;color:var(--line);padding:0;
+  /* Style as an editable text input instead of a round icon button */
+  .tslot-input{
+    width:65px;
+    height:26px;
+    border:1px solid var(--line-dim);
+    border-radius:2px;
+    background:var(--void-2);
+    color:var(--line);
+    font:600 11px 'Rajdhani', sans-serif;
+    text-transform:uppercase;
+    text-align:center;
+    padding:2px 4px;
   }
-  .tslot:hover{transform:scale(1.1);border-color:var(--amber)}
-  .tslot svg{width:19px;height:19px}
-  .tslot.empty{border-style:dashed;opacity:.45}
+  .tslot-input:focus, .tslot-input:hover{
+    border-color:var(--amber);
+    background:var(--panel);
+  }
 
   /* ============ THEATRE PICKER ============ */
   #picker-backdrop{
@@ -654,7 +663,7 @@ function buildPlanets(){
       <div class="theatres">
         <div class="sec-label">Theatres</div>
         <div class="t-slots">
-          ${p.theatres.map((t,i)=>`<button class="tslot" data-planet="${p.id}" data-tslot="${i}"></button>`).join('')}
+          ${p.theatres.map((t,i)=>`<input class="tslot-input" data-planet="${p.id}" data-tslot="${i}" placeholder="Theatre">`).join('')}
         </div>
       </div>`;
     stage.appendChild(el);
@@ -738,10 +747,12 @@ if (on) {
       else { s.classList.add('empty'); s.title = 'Empty location (click to build)'; }
     });
     /* theatres */
-    document.querySelectorAll(`#${planetElId(p.id)} .tslot`).forEach(s=>{
-      const key = ps.theatres[+s.dataset.tslot];
-      if(key){ s.classList.remove('empty'); s.innerHTML = glyphSvg(key); s.title = THEATRES[key]+' (click to change)'; }
-      else { s.classList.add('empty'); s.innerHTML=''; s.title = 'No theatre (click to set)'; }
+    document.querySelectorAll(`#${planetElId(p.id)} .tslot-input`).forEach(s=>{
+      const idx = +s.dataset.tslot;
+      // Only update input value if the user isn't currently typing in it
+      if (document.activeElement !== s) {
+        s.value = ps.theatres[idx] || '';
+      }
     });
   }
 }
@@ -785,6 +796,16 @@ if(tb){
 document.getElementById('alliances').addEventListener('input', e=>{
   const i = e.target.closest('input[data-name]');
   if(i){ state.names[i.dataset.name] = i.value || i.dataset.name.toUpperCase(); paint0names(); scheduleSave(); }
+});
+  /* Save changes to theatre text boxes */
+stage.addEventListener('input', e => {
+  const input = e.target.closest('.tslot-input');
+  if(input){
+    const planetId = input.dataset.planet;
+    const idx = +input.dataset.tslot;
+    state.planets[planetId].theatres[idx] = input.value;
+    scheduleSave();
+  }
 });
 function paint0names(){ /* refresh titles without clobbering the focused input */ 
   paint();
