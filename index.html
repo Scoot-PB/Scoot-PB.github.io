@@ -64,8 +64,8 @@
     background:transparent;transition:background .12s;min-width:0;padding:0;
   }
   #track button.a1{ background: var(--a1); }
-#track button.a2{ background: var(--a2); }
-#track button.a3{ background: var(--a3); }
+  #track button.a2{ background: var(--a2); }
+  #track button.a3{ background: var(--a3); }
   .track-boxes button:first-child{border-left:1px solid var(--line-dim)}
   .track-boxes button.filled{background:var(--line)}
   .track-boxes button.current{background:var(--amber)}
@@ -94,16 +94,14 @@
   .save-note{font-size:10px;letter-spacing:.15em;color:var(--line-dim);text-transform:uppercase;min-width:64px;text-align:right}
 
   /* ============ MAP VIEWPORT ============ */
-  #viewport{flex:1;overflow:auto;position:relative;background:var(--void)}
-#stage {
-  position: relative;
-  width: 2048px;
-  height: 1520px;
-  transform-origin: 0 0;
-
-  /* Replace with your galaxy image */
-  background: url("https://github.com/Scoot-PB/Scoot-PB.github.io/blob/main/BCO.7ad04081-2617-4dca-8d5f-495acc40e750.png?raw=true") center/cover no-repeat, var(--void);
-}
+  #viewport{flex:1;overflow:auto;position:relative;background:var(--void);width:100%;}
+  #stage {
+    position: relative;
+    width: 2048px;
+    height: 1520px;
+    transform-origin: 0 0;
+    background: url("https://github.com/Scoot-PB/Scoot-PB.github.io/blob/main/BCO.7ad04081-2617-4dca-8d5f-495acc40e750.png?raw=true") center/cover no-repeat, var(--void);
+  }
   #stars,#lines{position:absolute;inset:0;width:100%;height:100%}
   #lines path{stroke:var(--line);stroke-width:1.4;stroke-dasharray:7 7;fill:none;opacity:.65}
 
@@ -174,11 +172,10 @@
     display:flex;gap:5px;background:linear-gradient(80deg,transparent,var(--panel) 12%);
     padding:6px 7px;border-radius:2px;
   }
-  /* Style as an editable text input instead of a round icon button */
   .tslot-input{
-    field-sizing: content; /* Automatically grows input with text size */
-    min-width: 65px;       /* Keeps original size as the starting minimum */
-    max-width: 160px;      /* Prevents text box from overlapping adjacent card features */
+    field-sizing: content;
+    min-width: 65px;
+    max-width: 160px;
     height: 26px;
     border: 1px solid var(--line-dim);
     border-radius: 2px;
@@ -192,6 +189,67 @@
   .tslot-input:focus, .tslot-input:hover{
     border-color:var(--amber);
     background:var(--panel);
+  }
+
+  /* ============ SHIP FLEET SYSTEM ============ */
+  #shipyard-panel {
+    position: fixed;
+    left: 14px;
+    bottom: 14px;
+    background: var(--void-2);
+    border: 1px solid #2a3a4c;
+    padding: 8px 12px;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  }
+  #shipyard-panel h3 {
+    font-size: 11px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--line-dim);
+  }
+
+  .ship-marker {
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid var(--line);
+    background: var(--panel);
+    display: grid;
+    place-items: center;
+    cursor: grab;
+    z-index: 15;
+    user-select: none;
+    touch-action: none;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 8px rgba(0,0,0,0.8);
+    transition: box-shadow 0.1s;
+  }
+  .ship-marker:active { cursor: grabbing; z-index: 16; box-shadow: 0 0 14px var(--amber); }
+  .ship-marker.a1 { background: var(--a1); color: #fff; }
+  .ship-marker.a2 { background: var(--a2); color: #fff; }
+  .ship-marker.a3 { background: var(--a3); color: #fff; }
+
+  .ship-marker .ship-label {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    background: rgba(10, 15, 22, 0.9);
+    color: var(--line);
+    padding: 1px 5px;
+    border: 1px solid var(--line-dim);
+    border-radius: 2px;
+    pointer-events: none;
+    margin-top: 2px;
   }
 
   /* ============ THEATRE PICKER ============ */
@@ -275,6 +333,15 @@
   </div>
 </div>
 
+<div id="shipyard-panel">
+  <h3>Fleet Deployment</h3>
+  <div style="display:flex; gap:6px;">
+    <button class="tbtn" id="add-ship-a1">+ Raider</button>
+    <button class="tbtn" id="add-ship-a2">+ Liberator</button>
+    <button class="tbtn" id="add-ship-a3">+ Oppressor</button>
+  </div>
+</div>
+
 <details id="legend">
   <summary>Theatres reference &amp; help</summary>
   <div class="legend-grid" id="legend-grid"></div>
@@ -282,7 +349,8 @@
     <b>Power levels:</b> click a cell — each column is one alliance. Click again to clear.<br>
     <b>Infrastructure:</b> click a slot to cycle which alliance built there.<br>
     <b>Theatres:</b> click an icon to change it.<br>
-    <b>Track:</b> click a box to log campaign progress.
+    <b>Track:</b> click a box to log campaign progress.<br>
+    <b>Ships:</b> Drag ships across the map. Double click a ship to rename or delete it.
   </div>
 </details>
 
@@ -310,7 +378,6 @@ const THEATRES = {
   tomb      : 'Tomb Complex',
 };
 
-/* Simple original glyphs for each theatre (24x24, stroke = currentColor) */
 const GLYPHS = {
   delvesite: `<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor"/>
     <g stroke="currentColor" stroke-width="1.6">
@@ -345,13 +412,12 @@ const GLYPHS = {
     <path d="M16 3.5 C17.8 3.5 18.4 5 18.4 7 L18.4 19 C18.4 20.2 17.6 21 16 21 C14.4 21 13.6 20.2 13.6 19 L13.6 7 C13.6 5 14.2 3.5 16 3.5 Z" fill="currentColor"/>`,
 };
 
-/* Alliance marker shapes (white on coloured cell), matching the rulebook stickers */
 const MARKERS = {
   a1: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7.5" fill="#fff"/></svg>`,
   a2: `<svg viewBox="0 0 24 24"><rect x="6.4" y="6.4" width="11.2" height="11.2" fill="#fff" transform="rotate(45 12 12)"/></svg>`,
   a3: `<svg viewBox="0 0 24 24"><polygon points="4.5,6 19.5,6 12,19" fill="#fff"/></svg>`,
 };
-/* Infrastructure glyph: simple cog, drawn dark on the alliance colour */
+
 const INFRA_GLYPH = `<svg viewBox="0 0 24 24"><g fill="currentColor">
   <circle cx="12" cy="12" r="5"/>
   <g stroke="currentColor" stroke-width="2.6">
@@ -362,178 +428,40 @@ const INFRA_GLYPH = `<svg viewBox="0 0 24 24"><g fill="currentColor">
   </g></g>
   <circle cx="12" cy="12" r="2" fill="var(--void-2,#0e1520)"/></svg>`;
 
-/* Planet roster: position = globe centre on the 2048x1520 stage */
-/* Planet roster: position = globe centre on the 2048x1520 stage */
 const PLANETS = [
-  {
-    id:"Good Lootin'",
-    name:"Good Lootin'",
-    system:'Gorund System',
-    x:385,
-    y:380,
-    infra:3,
-    theatres:['Hab Sprawl']
-  },
-  {
-    id:"Waagh! World",
-    name:"Waagh! World",
-    system:'Osymanden System',
-    x:1175,
-    y:200,
-    infra:3,
-    theatres:['Dominatus']
-  },
-  {
-    id:"Krump",
-    name:"Krump",
-    system:'Kasphos System',
-    x:838,
-    y:415,
-    infra:2,
-    theatres:['Xenoflora Jungle']
-  },
-  {
-    id:"Mad Maxx",
-    name:"Mad Maxx",
-    system:'Reiya System',
-    x:1438,
-    y:445,
-    infra:3,
-    theatres:['Desolate Wastelands']
-  },
-  {
-    id:"Da Big Rokk",
-    name:"Da Big Rokk",
-    system:'Esvar System',
-    x:1858,
-    y:515,
-    infra:2,
-    theatres:['Dominatus']
-  },
-  {
-    id:"Dakka Wun",
-    name:"Dakka Wun",
-    system:'Zur Mortalis System',
-    x:712,
-    y:715,
-    infra:2,
-    theatres:['Rad Zone']
-  },
-  {
-    id:"Bad Lootin'",
-    name:"Bad Lootin'",
-    system:'Salen System',
-    x:240,
-    y:810,
-    infra:4,
-    theatres:['Deadlands']
-  },
-  {
-    id:"Sept Skoo'tah",
-    name:"Sept Skoo'tah",
-    system:'Heliodras System',
-    x:1185,
-    y:825,
-    infra:2,
-    theatres:['Spaceport']
-  },
-  {
-    id:"Da Small Rokk",
-    name:"Da Small Rokk",
-    system:'Orphos System',
-    x:1638,
-    y:890,
-    infra:4,
-    theatres:['Dominatus']
-  },
-  {
-    id:"Dakka Too",
-    name:"Dakka Too",
-    system:'Vespator System',
-    x:782,
-    y:1190,
-    infra:3,
-    theatres:['Dominatus']
-  },
-  {
-    id:"Severah's Grasp",
-    name:"Severah's Grasp",
-    system:'Ikaron System',
-    x:1838,
-    y:1235,
-    infra:3,
-    theatres:['Delvesite Facility']
-  },
-  {
-    id:"Da Spooky",
-    name:"Da Spooky",
-    system:'Diodecis System',
-    x:435,
-    y:1300,
-    infra:3,
-    theatres:['Tomb Complex']
-  },
-  {
-    id:"Sept Ed'Gha",
-    name:"Sept Ed'Gha",
-    system:'Vilkum System',
-    x:1080,
-    y:1320,
-    infra:2,
-    theatres:['Forge Complex']
-  },
+  { id:"Good Lootin'", name:"Good Lootin'", system:'Gorund System', x:385, y:380, infra:3, theatres:['Hab Sprawl'] },
+  { id:"Waagh! World", name:"Waagh! World", system:'Osymanden System', x:1175, y:200, infra:3, theatres:['Dominatus'] },
+  { id:"Krump", name:"Krump", system:'Kasphos System', x:838, y:415, infra:2, theatres:['Xenoflora Jungle'] },
+  { id:"Mad Maxx", name:"Mad Maxx", system:'Reiya System', x:1438, y:445, infra:3, theatres:['Desolate Wastelands'] },
+  { id:"Da Big Rokk", name:"Da Big Rokk", system:'Esvar System', x:1858, y:515, infra:2, theatres:['Dominatus'] },
+  { id:"Dakka Wun", name:"Dakka Wun", system:'Zur Mortalis System', x:712, y:715, infra:2, theatres:['Rad Zone'] },
+  { id:"Bad Lootin'", name:"Bad Lootin'", system:'Salen System', x:240, y:810, infra:4, theatres:['Deadlands'] },
+  { id:"Sept Skoo'tah", name:"Sept Skoo'tah", system:'Heliodras System', x:1185, y:825, infra:2, theatres:['Spaceport'] },
+  { id:"Da Small Rokk", name:"Da Small Rokk", system:'Orphos System', x:1638, y:890, infra:4, theatres:['Dominatus'] },
+  { id:"Dakka Too", name:"Dakka Too", system:'Vespator System', x:782, y:1190, infra:3, theatres:['Dominatus'] },
+  { id:"Severah's Grasp", name:"Severah's Grasp", system:'Ikaron System', x:1838, y:1235, infra:3, theatres:['Delvesite Facility'] },
+  { id:"Da Spooky", name:"Da Spooky", system:'Diodecis System', x:435, y:1300, infra:3, theatres:['Tomb Complex'] },
+  { id:"Sept Ed'Gha", name:"Sept Ed'Gha", system:'Vilkum System', x:1080, y:1320, infra:2, theatres:['Forge Complex'] },
 ];
-/* Connections traced from the printed map (18 routes) */
-/* Connections traced from the printed map */
+
 const CONNECTIONS = [
-  ["Severah's Grasp", "Da Small Rokk"],
-  ["Severah's Grasp", "Sept Skoo'tah"],
-  ["Severah's Grasp", "Dakka Too"],
-
-  ["Da Big Rokk", "Da Small Rokk"],
-  ["Da Big Rokk", "Sept Skoo'tah"],
-  ["Da Big Rokk", "Mad Maxx"],
-  ["Da Big Rokk", "Waagh! World"],
-
-  ["Mad Maxx", "Sept Skoo'tah"],
-  ["Mad Maxx", "Dakka Wun"],
-  ["Mad Maxx", "Krump"],
-  ["Mad Maxx", "Waagh! World"],
-
-  ["Krump", "Sept Skoo'tah"],
-  ["Krump", "Dakka Wun"],
-  ["Krump", "Good Lootin'"],
-  ["Krump", "Waagh! World"],
-
-  ["Good Lootin'", "Sept Skoo'tah"],
-  ["Good Lootin'", "Bad Lootin'"],
-  ["Good Lootin'", "Dakka Wun"],
-  ["Good Lootin'", "Da Spooky"],
-
-  ["Bad Lootin'", "Dakka Wun"],
-  ["Bad Lootin'", "Da Spooky"],
-
+  ["Severah's Grasp", "Da Small Rokk"], ["Severah's Grasp", "Sept Skoo'tah"], ["Severah's Grasp", "Dakka Too"],
+  ["Da Big Rokk", "Da Small Rokk"], ["Da Big Rokk", "Sept Skoo'tah"], ["Da Big Rokk", "Mad Maxx"], ["Da Big Rokk", "Waagh! World"],
+  ["Mad Maxx", "Sept Skoo'tah"], ["Mad Maxx", "Dakka Wun"], ["Mad Maxx", "Krump"], ["Mad Maxx", "Waagh! World"],
+  ["Krump", "Sept Skoo'tah"], ["Krump", "Dakka Wun"], ["Krump", "Good Lootin'"], ["Krump", "Waagh! World"],
+  ["Good Lootin'", "Sept Skoo'tah"], ["Good Lootin'", "Bad Lootin'"], ["Good Lootin'", "Dakka Wun"], ["Good Lootin'", "Da Spooky"],
+  ["Bad Lootin'", "Dakka Wun"], ["Bad Lootin'", "Da Spooky"],
   ["Dakka Wun", "Dakka Too"],
-
-  ["Sept Skoo'tah", "Tau TBC"],
-  ["Sept Skoo'tah", "Da Small Rokk"],
-
-  ["Dakka Too", "Da Spooky"],
-  ["Dakka Too", "Tau TBC"],
-
+  ["Sept Skoo'tah", "Tau TBC"], ["Sept Skoo'tah", "Da Small Rokk"],
+  ["Dakka Too", "Da Spooky"], ["Dakka Too", "Tau TBC"],
   ["Da Spooky", "Tau TBC"]
 ];
 
 const ALLIANCES = ['a1','a2','a3'];
 const STORE_KEY = 'vespator-campaign-v1';
 
-/* Safe DOM id for planet cards.
-   Needed because planet names now contain spaces, apostrophes and punctuation. */
 function planetElId(id){
-  return 'planet-' + id
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+  return 'planet-' + id.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
 /* ================= STATE ================= */
@@ -543,7 +471,8 @@ function freshState(){
     turn: 0,
     track: Array(55).fill(null),
     names:{a1:'Raiders', a2:'Liberators', a3:'Oppressors'},
-    planets:{}
+    planets:{},
+    ships:[]
   };
 
   for(const p of PLANETS){
@@ -561,28 +490,28 @@ let memoryOnly = true;
 
 async function loadState(){
   try{
-    if(window.storage){
-      const r = await window.storage.get(STORE_KEY);
-      if(r && r.value){
-        const saved = JSON.parse(r.value);
-        const base = freshState();
-        state = {...base, ...saved, names:{...base.names, ...(saved.names||{})}, planets:{...base.planets}};
-        for(const id in base.planets){
-          if(saved.planets && saved.planets[id]) state.planets[id] = {...base.planets[id], ...saved.planets[id]};
-        }
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw){
+      const saved = JSON.parse(raw);
+      const base = freshState();
+      state = {...base, ...saved, names:{...base.names, ...(saved.names||{})}, planets:{...base.planets}, ships: saved.ships || []};
+      for(const id in base.planets){
+        if(saved.planets && saved.planets[id]) state.planets[id] = {...base.planets[id], ...saved.planets[id]};
       }
-      memoryOnly = false;
     }
-  }catch(e){ memoryOnly = !window.storage; }
+    memoryOnly = false;
+  }catch(e){ memoryOnly = true; }
 }
+
 let saveTimer = null;
 function scheduleSave(){
   note('…');
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async ()=>{
-    if(memoryOnly){ note('unsaved'); return; }
-    try{ await window.storage.set(STORE_KEY, JSON.stringify(state)); note('saved'); }
-    catch(e){ note('unsaved'); }
+    try{ 
+      localStorage.setItem(STORE_KEY, JSON.stringify(state)); 
+      note('saved'); 
+    }catch(e){ note('unsaved'); }
   }, 400);
 }
 function note(t){ document.getElementById('save-note').textContent = t; }
@@ -607,23 +536,12 @@ function buildStars(){
 function buildLines(){
   const svg = document.getElementById('lines');
   svg.setAttribute('viewBox','0 0 2048 1520');
-
-  const pos = Object.fromEntries(
-    PLANETS.map(p => [p.id, [p.x, p.y]])
-  );
-
-  const missing = CONNECTIONS.filter(([a,b]) => !pos[a] || !pos[b]);
-
-  if(missing.length){
-    console.warn('Missing planet positions for routes:', missing);
-  }
+  const pos = Object.fromEntries(PLANETS.map(p => [p.id, [p.x, p.y]]));
 
   svg.innerHTML = CONNECTIONS.map(([a,b]) => {
     if(!pos[a] || !pos[b]) return '';
-
     const [x1,y1] = pos[a];
     const [x2,y2] = pos[b];
-
     return `<path d="M${x1} ${y1} L${x2} ${y2}"/>`;
   }).join('');
 }
@@ -691,72 +609,164 @@ function buildLegend(){
     Object.entries(THEATRES).map(([k,n])=>`<div>${glyphSvg(k)}<span>${n}</span></div>`).join('');
 }
 
-/* ================= PAINT (state -> DOM) ================= */
+/* ================= SHIP DRAG ENGINE ================= */
 
-function paint(){
-/* track */
-if (!Array.isArray(state.track)) {
-  state.track = Array(55).fill(null);
+function paintShips() {
+  document.querySelectorAll('.ship-marker').forEach(el => el.remove());
+  if (!state.ships) state.ships = [];
+
+  state.ships.forEach(ship => {
+    const el = document.createElement('div');
+    el.className = `ship-marker ${ship.alliance}`;
+    el.id = `ship-${ship.id}`;
+    el.style.left = `${ship.x}px`;
+    el.style.top = `${ship.y}px`;
+    
+    el.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2.5s-4.5 4.5-4.5 10.5c0 3.5 1.5 6 4.5 8.5 3-2.5 4.5-5 4.5-8.5C16.5 7 12 2.5 12 2.5z"/>
+      </svg>
+      <span class="ship-label">${ship.name}</span>
+    `;
+
+    makeDraggable(el, ship);
+    
+    el.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      const action = prompt(`Edit Ship:\n• Rename "${ship.name}" below\n• Type 'DELETE' to remove this ship.`, ship.name);
+      if (action === 'DELETE') {
+        state.ships = state.ships.filter(s => s.id !== ship.id);
+      } else if (action && action.trim() !== "") {
+        ship.name = action.trim();
+      }
+      paintShips();
+      scheduleSave();
+    });
+
+    stage.appendChild(el);
+  });
 }
 
-document.querySelectorAll('#track button').forEach(b=>{
-  const i = +b.dataset.turn - 1;
-  const owner = state.track[i];
+function makeDraggable(el, shipData) {
+  let isDragging = false;
+  let startX, startY;
 
-  b.classList.remove('a1','a2','a3','filled','current');
+  el.addEventListener('pointerdown', (e) => {
+    isDragging = true;
+    el.setPointerCapture(e.pointerId);
+    startX = e.clientX;
+    startY = e.clientY;
+  });
 
-  if (owner){
-    b.classList.add(owner);
-    b.innerHTML = MARKERS[owner];
-    b.title = `Campaign track ${i + 1} — ${state.names[owner]}`;
-  } else {
-    b.innerHTML = '';
-    b.title = `Campaign track ${i + 1}`;
-  }
+  el.addEventListener('pointermove', (e) => {
+    if (!isDragging) return;
+    
+    const dx = (e.clientX - startX) / zoom;
+    const dy = (e.clientY - startY) / zoom;
+    
+    shipData.x += dx;
+    shipData.y += dy;
+
+    shipData.x = Math.max(10, Math.min(2038, shipData.x));
+    shipData.y = Math.max(10, Math.min(1510, shipData.y));
+
+    el.style.left = `${shipData.x}px`;
+    el.style.top = `${shipData.y}px`;
+
+    startX = e.clientX;
+    startY = e.clientY;
+  });
+
+  const stopDrag = (e) => {
+    if (isDragging) {
+      isDragging = false;
+      try { el.releasePointerCapture(e.pointerId); } catch(err){}
+      scheduleSave();
+    }
+  };
+
+  el.addEventListener('pointerup', stopDrag);
+  el.addEventListener('pointercancel', stopDrag);
+}
+
+['a1', 'a2', 'a3'].forEach(alliance => {
+  document.getElementById(`add-ship-${alliance}`).addEventListener('click', () => {
+    const shipNum = (state.ships ? state.ships.length : 0) + 1;
+    const newShip = {
+      id: 'ship_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+      name: `Ship ${shipNum}`,
+      alliance: alliance,
+      x: 1024 + (Math.random() * 80 - 40),
+      y: 760 + (Math.random() * 80 - 40)
+    };
+    if (!state.ships) state.ships = [];
+    state.ships.push(newShip);
+    paintShips();
+    scheduleSave();
+  });
 });
 
-const marked = state.track.filter(Boolean).length;
-document.getElementById('track-readout').textContent = marked ? `${marked}/55` : '—';
+/* ================= PAINT ================= */
 
+function paint(){
+  if (!Array.isArray(state.track)) {
+    state.track = Array(55).fill(null);
+  }
 
-  /* alliance names */
+  document.querySelectorAll('#track button').forEach(b=>{
+    const i = +b.dataset.turn - 1;
+    const owner = state.track[i];
+    b.classList.remove('a1','a2','a3','filled','current');
+
+    if (owner){
+      b.classList.add(owner);
+      b.innerHTML = MARKERS[owner];
+      b.title = `Campaign track ${i + 1} — ${state.names[owner]}`;
+    } else {
+      b.innerHTML = '';
+      b.title = `Campaign track ${i + 1}`;
+    }
+  });
+
+  const marked = state.track.filter(Boolean).length;
+  document.getElementById('track-readout').textContent = marked ? `${marked}/55` : '—';
+
   document.querySelectorAll('#alliances input').forEach(i=>{
     if(document.activeElement !== i) i.value = state.names[i.dataset.name];
   });
 
   for(const p of PLANETS){
     const ps = state.planets[p.id];
-    /* power cells */
     document.querySelectorAll(`#${planetElId(p.id)} .pcell`).forEach(c=>{
       const a=c.dataset.alliance, lv=+c.dataset.level;
       const on = ps.power[a]===lv;
       c.classList.remove('a1','a2','a3');
-if (on) {
-  c.classList.add(a);
-  c.style.background = `var(--${a})`; // force colour
-} else {
-  c.style.background = '';
-}
-
+      if (on) {
+        c.classList.add(a);
+        c.style.background = `var(--${a})`;
+      } else {
+        c.style.background = '';
+      }
       c.innerHTML = on ? MARKERS[a] : '';
       c.title = on ? `${state.names[a]} — power level ${lv}` : `Set ${state.names[a]} to level ${lv}`;
     });
-    /* infra */
+    
     document.querySelectorAll(`#${planetElId(p.id)} .islot`).forEach(s=>{
       const owner = ps.infra[+s.dataset.slot];
       s.classList.remove('a1','a2','a3','empty');
       if(owner){ s.classList.add(owner); s.title = `Infrastructure — ${state.names[owner]} (click to cycle)`; }
       else { s.classList.add('empty'); s.title = 'Empty location (click to build)'; }
     });
-    /* theatres */
+
     document.querySelectorAll(`#${planetElId(p.id)} .tslot-input`).forEach(s=>{
       const idx = +s.dataset.tslot;
-      // Only update input value if the user isn't currently typing in it
       if (document.activeElement !== s) {
         s.value = ps.theatres[idx] || '';
       }
     });
   }
+
+  paintShips();
 }
 
 /* ================= INTERACTIONS ================= */
@@ -777,29 +787,22 @@ document.addEventListener('click', e=>{
     ps.infra[i] = order[(order.indexOf(ps.infra[i])+1)%order.length];
     paint(); scheduleSave(); return;
   }
-  const ts = e.target.closest('.tslot');
-  if(ts){ openPicker(ts.dataset.planet, +ts.dataset.tslot); return; }
 
- const tb = e.target.closest('#track button');
-if(tb){
-  const i = +tb.dataset.turn - 1;
-
-  const order = [null, 'a1', 'a2', 'a3'];
-  const current = state.track[i];
-
-  state.track[i] = order[(order.indexOf(current) + 1) % order.length];
-
-  paint();
-  scheduleSave();
-  return;
-}
+  const tb = e.target.closest('#track button');
+  if(tb){
+    const i = +tb.dataset.turn - 1;
+    const order = [null, 'a1', 'a2', 'a3'];
+    const current = state.track[i];
+    state.track[i] = order[(order.indexOf(current) + 1) % order.length];
+    paint(); scheduleSave(); return;
+  }
 });
 
 document.getElementById('alliances').addEventListener('input', e=>{
   const i = e.target.closest('input[data-name]');
-  if(i){ state.names[i.dataset.name] = i.value || i.dataset.name.toUpperCase(); paint0names(); scheduleSave(); }
+  if(i){ state.names[i.dataset.name] = i.value || i.dataset.name.toUpperCase(); paint(); scheduleSave(); }
 });
-  /* Save changes to theatre text boxes */
+
 stage.addEventListener('input', e => {
   const input = e.target.closest('.tslot-input');
   if(input){
@@ -809,12 +812,9 @@ stage.addEventListener('input', e => {
     scheduleSave();
   }
 });
-function paint0names(){ /* refresh titles without clobbering the focused input */ 
-  paint();
-}
 
 document.getElementById('reset').addEventListener('click', ()=>{
-  if(confirm('Clear all markers, infrastructure and the campaign track? Theatres return to the printed defaults.')){
+  if(confirm('Clear all markers, infrastructure, fleet ships, and campaign track?')){
     state = freshState(); paint(); scheduleSave();
   }
 });
@@ -832,6 +832,7 @@ function openPicker(planetId, idx){
     `<button class="pick clear" data-key="">— Clear slot —</button>`;
   backdrop.classList.add('open');
 }
+
 backdrop.addEventListener('click', e=>{
   const b = e.target.closest('.pick');
   if(b){
@@ -851,7 +852,6 @@ function applyZoom(){
   stage.style.transform = `scale(${zoom})`;
   stage.style.width = '2048px';
   stage.style.height = '1520px';
-  /* keep the scroll area correct when scaling */
   stage.style.marginRight = `${2048*(zoom-1)}px`;
   stage.style.marginBottom = `${1520*(zoom-1)}px`;
 }
@@ -864,15 +864,13 @@ document.getElementById('zoom-in').onclick  = ()=>{ zoom=Math.min(1.8, zoom+0.12
 document.getElementById('zoom-out').onclick = ()=>{ zoom=Math.max(0.3, zoom-0.12); applyZoom(); };
 document.getElementById('zoom-fit').onclick = fit;
 
-  document.getElementById('export-pdf').addEventListener('click', async () => {
+document.getElementById('export-pdf').addEventListener('click', async () => {
   const { jsPDF } = window.jspdf;
-
   const oldZoom = zoom;
   zoom = 1;
   applyZoom();
 
   const stageEl = document.getElementById('stage');
-
   const canvas = await html2canvas(stageEl, {
     scale: 0.8,
     useCORS: true,
@@ -880,7 +878,6 @@ document.getElementById('zoom-fit').onclick = fit;
   });
 
   const imgData = canvas.toDataURL('image/png');
-
   const pdf = new jsPDF({
     orientation: 'landscape',
     unit: 'px',
@@ -893,13 +890,13 @@ document.getElementById('zoom-fit').onclick = fit;
   zoom = oldZoom;
   applyZoom();
 });
+
 /* ================= BOOT ================= */
 (async function(){
   buildStars(); buildLines(); buildPlanets(); buildTrack(); buildAlliances(); buildLegend();
   await loadState();
   paint();
   note(memoryOnly ? 'unsaved' : 'saved');
-  /* default: fit width so the whole front is visible */
   zoom = Math.min(1, (viewport.clientWidth-8)/2048);
   applyZoom();
 })();
