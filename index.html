@@ -169,23 +169,25 @@
   .islot.empty svg{display:none}
 
  /* theatres */
-  .theatres{position:absolute;left:204px;top:128px}
+  .theatres{position:absolute;left:204px;top:128px;max-width:280px;z-index:5}
   .t-slots{
     display:flex;gap:5px;background:linear-gradient(80deg,transparent,var(--panel) 12%);
     padding:6px 7px;border-radius:2px;
   }
   /* Style as an editable text input instead of a round icon button */
   .tslot-input{
-    width:65px;
-    height:26px;
-    border:1px solid var(--line-dim);
-    border-radius:2px;
-    background:var(--void-2);
-    color:var(--line);
-    font:600 11px 'Rajdhani', sans-serif;
-    text-transform:uppercase;
-    text-align:center;
-    padding:2px 4px;
+    field-sizing: content; /* Automatically grows input with text size */
+    min-width: 65px;       /* Keeps original size as the starting minimum */
+    max-width: 160px;      /* Prevents text box from overlapping adjacent card features */
+    height: 26px;
+    border: 1px solid var(--line-dim);
+    border-radius: 2px;
+    background: var(--void-2);
+    color: var(--line);
+    font: 600 11px 'Rajdhani', sans-serif;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 2px 6px;
   }
   .tslot-input:focus, .tslot-input:hover{
     border-color:var(--amber);
