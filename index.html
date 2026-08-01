@@ -30,9 +30,8 @@
   overflow:hidden;
   display:flex;
   flex-direction:column;
-
-  justify-content:center;   /* vertical centering */
-  align-items:center;       /* horizontal centering */
+  justify-content:center;
+  align-items:center;
 }
 
   button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
@@ -43,6 +42,7 @@
   /* ============ HEADER ============ */
   header{
     flex:0 0 auto;
+    width: 100%;
     padding:10px 18px 8px;
     background:linear-gradient(180deg,var(--void-2),var(--void));
     border-bottom:1px solid #2a3a4c;
@@ -93,13 +93,30 @@
   .tbtn:hover{background:var(--panel);border-color:var(--line)}
   .save-note{font-size:10px;letter-spacing:.15em;color:var(--line-dim);text-transform:uppercase;min-width:64px;text-align:right}
 
-  /* ============ MAP VIEWPORT ============ */
-  #viewport{flex:1;overflow:auto;position:relative;background:var(--void);width:100%;}
+  /* ============ MAP VIEWPORT & STAGE CENTERING ============ */
+  #viewport{
+    flex:1 1 auto;
+    width:100%;
+    overflow:auto;
+    position:relative;
+    background:var(--void);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  #stage-wrapper {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   #stage {
     position: relative;
     width: 2048px;
     height: 1520px;
-    transform-origin: 0 0;
+    transform-origin: center center;
     background: url("https://github.com/Scoot-PB/Scoot-PB.github.io/blob/main/BCO.7ad04081-2617-4dca-8d5f-495acc40e750.png?raw=true") center/cover no-repeat, var(--void);
   }
   #stars,#lines{position:absolute;inset:0;width:100%;height:100%}
@@ -166,7 +183,7 @@
   .islot svg{width:19px;height:19px;color:#0c1117}
   .islot.empty svg{display:none}
 
- /* theatres */
+  /* theatres */
   .theatres{position:absolute;left:204px;top:128px;max-width:280px;z-index:5}
   .t-slots{
     display:flex;gap:5px;background:linear-gradient(80deg,transparent,var(--panel) 12%);
@@ -326,10 +343,12 @@
 </header>
 
 <div id="viewport">
-  <div id="stage">
-    <svg id="stars"></svg>
-    <svg id="lines"></svg>
-    <!-- planet cards injected here -->
+  <div id="stage-wrapper">
+    <div id="stage">
+      <svg id="stars"></svg>
+      <svg id="lines"></svg>
+      <!-- planet cards injected here -->
+    </div>
   </div>
 </div>
 
@@ -519,6 +538,7 @@ function note(t){ document.getElementById('save-note').textContent = t; }
 /* ================= RENDER ================= */
 
 const stage = document.getElementById('stage');
+const stageWrapper = document.getElementById('stage-wrapper');
 
 function glyphSvg(key, extra=''){ return `<svg viewBox="0 0 24 24" ${extra}>${GLYPHS[key]}</svg>`; }
 
@@ -633,7 +653,7 @@ function paintShips() {
     
     el.addEventListener('dblclick', (e) => {
       e.stopPropagation();
-      const action = prompt(`Edit Ship:\n• Rename "${ship.name}" below\n• Type 'DELETE' to remove this ship.`, ship.name);
+      const action = prompt(`Edit Ship:\n• Change name below\n• Type 'DELETE' to remove this vessel.`, ship.name);
       if (action === 'DELETE') {
         state.ships = state.ships.filter(s => s.id !== ship.id);
       } else if (action && action.trim() !== "") {
@@ -689,16 +709,25 @@ function makeDraggable(el, shipData) {
   el.addEventListener('pointercancel', stopDrag);
 }
 
+// Prompt for custom ship name when spawning
 ['a1', 'a2', 'a3'].forEach(alliance => {
   document.getElementById(`add-ship-${alliance}`).addEventListener('click', () => {
-    const shipNum = (state.ships ? state.ships.length : 0) + 1;
+    const defaultNum = (state.ships ? state.ships.length : 0) + 1;
+    const allianceTitle = state.names[alliance] || 'Fleet';
+    const inputName = prompt(`Name your new ${allianceTitle} ship:`, `${allianceTitle} Ship ${defaultNum}`);
+    
+    if (inputName === null) return; // User canceled prompt
+
+    const shipName = inputName.trim() || `${allianceTitle} Ship ${defaultNum}`;
+    
     const newShip = {
       id: 'ship_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
-      name: `Ship ${shipNum}`,
+      name: shipName,
       alliance: alliance,
       x: 1024 + (Math.random() * 80 - 40),
       y: 760 + (Math.random() * 80 - 40)
     };
+    
     if (!state.ships) state.ships = [];
     state.ships.push(newShip);
     paintShips();
@@ -845,21 +874,29 @@ backdrop.addEventListener('click', e=>{
 });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') backdrop.classList.remove('open'); });
 
-/* zoom */
+/* zoom and scroll centering */
 let zoom = 1;
 const viewport = document.getElementById('viewport');
+
 function applyZoom(){
   stage.style.transform = `scale(${zoom})`;
-  stage.style.width = '2048px';
-  stage.style.height = '1520px';
-  stage.style.marginRight = `${2048*(zoom-1)}px`;
-  stage.style.marginBottom = `${1520*(zoom-1)}px`;
+  
+  // Update parent dimensions based on zoom scale so flexbox centering works smoothly
+  stageWrapper.style.width = `${2048 * zoom}px`;
+  stageWrapper.style.height = `${1520 * zoom}px`;
 }
+
 function fit(){
-  zoom = Math.min((viewport.clientWidth-8)/2048, (viewport.clientHeight-8)/1520);
+  const pad = 16;
+  zoom = Math.min((viewport.clientWidth - pad)/2048, (viewport.clientHeight - pad)/1520);
   zoom = Math.max(0.3, Math.min(zoom, 1.6));
   applyZoom();
+  
+  // Center scrollbars when reset or fit is clicked
+  viewport.scrollLeft = (stageWrapper.clientWidth - viewport.clientWidth) / 2;
+  viewport.scrollTop = (stageWrapper.clientHeight - viewport.clientHeight) / 2;
 }
+
 document.getElementById('zoom-in').onclick  = ()=>{ zoom=Math.min(1.8, zoom+0.12); applyZoom(); };
 document.getElementById('zoom-out').onclick = ()=>{ zoom=Math.max(0.3, zoom-0.12); applyZoom(); };
 document.getElementById('zoom-fit').onclick = fit;
@@ -897,8 +934,7 @@ document.getElementById('export-pdf').addEventListener('click', async () => {
   await loadState();
   paint();
   note(memoryOnly ? 'unsaved' : 'saved');
-  zoom = Math.min(1, (viewport.clientWidth-8)/2048);
-  applyZoom();
+  fit();
 })();
 </script>
 </body>
