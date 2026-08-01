@@ -22,16 +22,17 @@
     --amber:#d9a441;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%}
-  body{
-  background:var(--void);
-  color:var(--line);
-  font-family:'Rajdhani',system-ui,sans-serif;
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
+ html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--void); /* Ensures the dark background covers the root viewport */
+  color: var(--line);
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
   button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
@@ -94,16 +95,16 @@
   .save-note{font-size:10px;letter-spacing:.15em;color:var(--line-dim);text-transform:uppercase;min-width:64px;text-align:right}
 
   /* ============ MAP VIEWPORT & STAGE CENTERING ============ */
-  #viewport{
-    flex:1 1 auto;
-    width:100%;
-    overflow:auto;
-    position:relative;
-    background:var(--void);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
+  #viewport {
+  flex: 1 1 0%;        /* Forces the container to take up all vertical space below the header */
+  width: 100%;
+  overflow: auto;
+  position: relative;
+  background: var(--void);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
   #stage-wrapper {
     flex: 0 0 auto;
