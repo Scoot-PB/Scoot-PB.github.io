@@ -905,28 +905,47 @@ document.getElementById('zoom-fit').onclick = fit;
 document.getElementById('export-pdf').addEventListener('click', async () => {
   const { jsPDF } = window.jspdf;
   const oldZoom = zoom;
+  
+  // 1. Reset zoom and scrolling temporarily to prevent clipping
   zoom = 1;
   applyZoom();
+  viewport.scrollLeft = 0;
+  viewport.scrollTop = 0;
 
   const stageEl = document.getElementById('stage');
-  const canvas = await html2canvas(stageEl, {
-    scale: 1,
-    useCORS: true,
-    backgroundColor: '#0a0f16'
-  });
 
-  const imgData = canvas.toDataURL('image/png');
-  const pdf = new jsPDF({
-    orientation: 'landscape',
-    unit: 'px',
-    format: [canvas.width, canvas.height]
-  });
+  try {
+    // 2. Render high-res canvas with explicit CORS & scale options
+    const canvas = await html2canvas(stageEl, {
+      scale: 3,                 /* 3x resolution multiplier for crisp detail */
+      useCORS: true,            /* Allows cross-origin background textures */
+      allowTaint: false,
+      logging: false,
+      width: 2048,
+      height: 1520,
+      backgroundColor: '#0a0f16'
+    });
 
-  pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-  pdf.save('vespator-map.pdf');
+    const imgData = canvas.toDataURL('image/png', 1.0);
+    
+    // 3. Generate PDF matching exact stage dimensions
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'px',
+      format: [2048, 1520]
+    });
 
-  zoom = oldZoom;
-  applyZoom();
+    pdf.addImage(imgData, 'PNG', 0, 0, 2048, 1520, undefined, 'FAST');
+    pdf.save('vespator-map.pdf');
+
+  } catch (err) {
+    console.error('PDF Export failed:', err);
+    alert('Export failed. If running locally, open the file via a local server (e.g. Live Server) to bypass browser image restrictions.');
+  } finally {
+    // 4. Restore original screen zoom
+    zoom = oldZoom;
+    applyZoom();
+  }
 });
 
 /* ================= BOOT ================= */
