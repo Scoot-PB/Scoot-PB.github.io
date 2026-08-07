@@ -604,7 +604,7 @@ function buildPlanets(){
       <div class="theatres">
         <div class="sec-label">Theatres</div>
         <div class="t-slots">
-          ${p.theatres.map((t,i)=>`<input class="tslot-input" data-planet="${p.id}" data-tslot="${i}" placeholder="Theatre">`).join('')}
+          ${p.theatres.map((t,i)=>`<input class="tslot-input" data-planet="${p.id}" data-tslot="${i}" placeholder="Theatre" oninput="this.value = this.value.toUpperCase()">`).join('')}
         </div>
       </div>`;
     stage.appendChild(el);
@@ -905,6 +905,11 @@ document.getElementById('zoom-fit').onclick = fit;
 document.getElementById('export-png').addEventListener('click', async () => {
   const oldZoom = zoom;
   
+  // Force all theatre inputs to uppercase in the actual DOM before capturing
+  document.querySelectorAll('.tslot-input').forEach(input => {
+    input.value = input.value.toUpperCase();
+  });
+
   // 1. Reset zoom and scrolling temporarily to prevent clipping
   zoom = 1;
   applyZoom();
@@ -916,8 +921,8 @@ document.getElementById('export-png').addEventListener('click', async () => {
   try {
     // 2. Render high-res canvas
     const canvas = await html2canvas(stageEl, {
-      scale: 3,                 /* 3x resolution multiplier for crisp detail */
-      useCORS: true,            /* Allows cross-origin background textures */
+      scale: 3,
+      useCORS: true,
       allowTaint: false,
       logging: false,
       width: 2048,
