@@ -911,16 +911,56 @@ document.getElementById('export-png').addEventListener('click', async () => {
     input.value = input.value.toUpperCase();
   });
 
-  // 1. Reset zoom and scrolling temporarily to prevent clipping
+  // 1. Create a bottom-left legend overlay element
+  const legendOverlay = document.createElement('div');
+  legendOverlay.id = 'export-legend-overlay';
+  legendOverlay.style.cssText = `
+    position: absolute;
+    bottom: 24px;
+    left: 24px;
+    background: var(--void-2);
+    border: 1px solid #2a3a4c;
+    padding: 12px 16px;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+    font-family: 'Rajdhani', sans-serif;
+  `;
+
+  // Build the key content
+  let keyHTML = `<div style="font-size:11px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:var(--line-dim); border-bottom:1px solid #2a3a4c; padding-bottom:4px; margin-bottom:2px;">Faction Key</div>`;
+  
+  ALLIANCES.forEach(a => {
+    const name = state.names[a] || a.toUpperCase();
+    keyHTML += `
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span class="chip" style="background: var(--${a}); width: 20px; height: 20px; display: grid; place-items: center; border-radius: 3px;">
+          ${MARKERS[a]}
+        </span>
+        <span style="font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--line);">
+          ${name}
+        </span>
+      </div>
+    `;
+  });
+
+  legendOverlay.innerHTML = keyHTML;
+
+  // 2. Attach overlay directly to stage
+  const stageEl = document.getElementById('stage');
+  stageEl.appendChild(legendOverlay);
+
+  // 3. Reset zoom and viewport scroll to prevent offset clipping
   zoom = 1;
   applyZoom();
   viewport.scrollLeft = 0;
   viewport.scrollTop = 0;
 
-  const stageEl = document.getElementById('stage');
-
   try {
-    // 2. Render high-res canvas
+    // 4. Render high-res canvas
     const canvas = await html2canvas(stageEl, {
       scale: 3,
       useCORS: true,
@@ -931,7 +971,7 @@ document.getElementById('export-png').addEventListener('click', async () => {
       backgroundColor: '#0a0f16'
     });
 
-    // 3. Create a temporary link element to trigger PNG download
+    // 5. Trigger download
     const link = document.createElement('a');
     link.download = 'vespator-map.png';
     link.href = canvas.toDataURL('image/png', 1.0);
@@ -941,7 +981,10 @@ document.getElementById('export-png').addEventListener('click', async () => {
     console.error('PNG Export failed:', err);
     alert('Export failed. If running locally, open the file via a local server (e.g. Live Server) to bypass browser image restrictions.');
   } finally {
-    // 4. Restore original screen zoom
+    // 6. Clean up the overlay and restore viewport scale
+    if (legendOverlay.parentNode) {
+      legendOverlay.parentNode.removeChild(legendOverlay);
+    }
     zoom = oldZoom;
     applyZoom();
   }
