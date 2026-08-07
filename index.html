@@ -338,7 +338,7 @@
     <button class="tbtn" id="zoom-in" title="Zoom in">+</button>
     <button class="tbtn" id="zoom-fit" title="Fit map to window">Fit</button>
     <button class="tbtn" id="reset" title="Clear all markers">Reset</button>
-    <button class="tbtn" id="export-pdf">Export PDF</button>
+    <button class="tbtn" id="export-png">Export PNG</button>
     <span class="save-note" id="save-note"></span>
   </div>
 </header>
@@ -381,9 +381,6 @@
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script>
 /* ================= DATA ================= */
 
 const THEATRES = {
@@ -902,8 +899,7 @@ document.getElementById('zoom-in').onclick  = ()=>{ zoom=Math.min(1.8, zoom+0.12
 document.getElementById('zoom-out').onclick = ()=>{ zoom=Math.max(0.3, zoom-0.12); applyZoom(); };
 document.getElementById('zoom-fit').onclick = fit;
 
-document.getElementById('export-pdf').addEventListener('click', async () => {
-  const { jsPDF } = window.jspdf;
+document.getElementById('export-png').addEventListener('click', async () => {
   const oldZoom = zoom;
   
   // 1. Reset zoom and scrolling temporarily to prevent clipping
@@ -915,7 +911,7 @@ document.getElementById('export-pdf').addEventListener('click', async () => {
   const stageEl = document.getElementById('stage');
 
   try {
-    // 2. Render high-res canvas with explicit CORS & scale options
+    // 2. Render high-res canvas
     const canvas = await html2canvas(stageEl, {
       scale: 3,                 /* 3x resolution multiplier for crisp detail */
       useCORS: true,            /* Allows cross-origin background textures */
@@ -925,6 +921,22 @@ document.getElementById('export-pdf').addEventListener('click', async () => {
       height: 1520,
       backgroundColor: '#0a0f16'
     });
+
+    // 3. Create a temporary link element to trigger PNG download
+    const link = document.createElement('a');
+    link.download = 'vespator-map.png';
+    link.href = canvas.toDataURL('image/png', 1.0);
+    link.click();
+
+  } catch (err) {
+    console.error('PNG Export failed:', err);
+    alert('Export failed. If running locally, open the file via a local server (e.g. Live Server) to bypass browser image restrictions.');
+  } finally {
+    // 4. Restore original screen zoom
+    zoom = oldZoom;
+    applyZoom();
+  }
+});
 
     const imgData = canvas.toDataURL('image/png', 1.0);
     
