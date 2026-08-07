@@ -41,7 +41,59 @@
   }
 
   /* ============ HEADER ============ */
-  
+  header{
+    flex:0 0 auto;
+    width: 100%;
+    padding:10px 18px 8px;
+    background:linear-gradient(180deg,var(--void-2),var(--void));
+    border-bottom:1px solid #2a3a4c;
+    display:flex;flex-wrap:wrap;align-items:center;gap:14px 26px;
+    z-index:20;
+  }
+  .title h1{
+    font-size:21px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    border-bottom:2px solid var(--line);padding-bottom:2px;line-height:1.1;
+    white-space:nowrap;
+  }
+  .title small{display:block;font-size:10px;letter-spacing:.3em;color:var(--line-dim);text-transform:uppercase;margin-top:3px}
+
+  .track{display:flex;flex-direction:column;gap:2px;min-width:280px;flex:1 1 340px;max-width:660px}
+  .track-label{font-size:9px;letter-spacing:.25em;color:var(--line-dim);text-transform:uppercase;display:flex;justify-content:space-between}
+  .track-boxes{display:flex;width:100%}
+  .track-boxes button{
+    flex:1;height:16px;border:1px solid var(--line-dim);border-left:none;
+    background:transparent;transition:background .12s;min-width:0;padding:0;
+  }
+  #track button.a1{ background: var(--a1); }
+  #track button.a2{ background: var(--a2); }
+  #track button.a3{ background: var(--a3); }
+  .track-boxes button:first-child{border-left:1px solid var(--line-dim)}
+  .track-boxes button.filled{background:var(--line)}
+  .track-boxes button.current{background:var(--amber)}
+  .track-boxes button:hover{background:#3c4f63}
+  .track-ticks{display:flex;font-size:9px;color:var(--line-dim);letter-spacing:.05em}
+  .track-ticks span{flex:1;text-align:left}
+  .track-ticks span:last-child{flex:0;}
+
+  .alliances{display:flex;gap:14px;align-items:center}
+  .alliance{display:flex;align-items:center;gap:6px}
+  .alliance .chip{width:18px;height:18px;display:grid;place-items:center;border-radius:3px}
+  .alliance input{
+    background:transparent;border:none;border-bottom:1px dashed transparent;
+    color:var(--line);font:600 13px 'Rajdhani';letter-spacing:.06em;width:88px;
+    text-transform:uppercase;
+  }
+  .alliance input:hover,.alliance input:focus{border-bottom-color:var(--line-dim)}
+
+  .toolbar{display:flex;gap:8px;align-items:center;margin-left:auto}
+  .tbtn{
+    border:1px solid var(--line-dim);padding:4px 12px;font:600 12px 'Rajdhani';
+    letter-spacing:.12em;text-transform:uppercase;border-radius:2px;
+    transition:background .12s,border-color .12s;
+  }
+  .tbtn:hover{background:var(--panel);border-color:var(--line)}
+  .save-note{font-size:10px;letter-spacing:.15em;color:var(--line-dim);text-transform:uppercase;min-width:64px;text-align:right}
+
   /* ============ MAP VIEWPORT & STAGE CENTERING ============ */
   #viewport {
   flex: 1 1 0%;        /* Forces the container to take up all vertical space below the header */
@@ -859,80 +911,16 @@ document.getElementById('export-png').addEventListener('click', async () => {
     input.value = input.value.toUpperCase();
   });
 
-  // 1. Calculate overall power levels per faction
-  const totalPower = { a1: 0, a2: 0, a3: 0 };
-  for (const pId in state.planets) {
-    const pPower = state.planets[pId].power;
-    ALLIANCES.forEach(a => {
-      if (pPower[a] !== null && pPower[a] !== undefined) {
-        totalPower[a] += pPower[a];
-      }
-    });
-  }
-
-  // 2. Calculate track progress
-  const totalTrack = state.track.filter(Boolean).length;
-
-  // 3. Create a temporary header overlay element to inject inside #stage
-  const exportHeader = document.createElement('div');
-  exportHeader.id = 'export-header-overlay';
-  exportHeader.style.cssText = `
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 2048px;
-    height: 90px;
-    background: linear-gradient(180deg, var(--void-2), var(--void));
-    border-bottom: 2px solid #2a3a4c;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 30px;
-    z-index: 100;
-    box-sizing: border-box;
-    font-family: 'Rajdhani', sans-serif;
-  `;
-
-  // Render header HTML with alliance details and calculated stats
-  exportHeader.innerHTML = `
-    <div style="display: flex; align-items: center; gap: 20px;">
-      <div class="title">
-        <h1 style="font-size:24px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; border-bottom:2px solid var(--line); padding-bottom:2px; margin:0; color:var(--line);">Craw's Fire</h1>
-        <small style="display:block; font-size:11px; letter-spacing:.3em; color:var(--line-dim); text-transform:uppercase; margin-top:3px;">Crossfire Campaign Overview</small>
-      </div>
-      <div style="background: rgba(255,255,255,0.05); border: 1px solid var(--line-dim); padding: 6px 14px; border-radius: 3px; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; color: var(--line);">
-        CAMPAIGN PROGRESS: <span style="color: var(--amber);">${totalTrack} / 55</span>
-      </div>
-    </div>
-    <div style="display: flex; gap: 30px; align-items: center;">
-      ${ALLIANCES.map(a => `
-        <div style="display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.3); padding: 6px 14px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">
-          <span class="chip" style="background: var(--${a}); width: 22px; height: 22px; display: grid; place-items: center; border-radius: 3px;">
-            ${MARKERS[a]}
-          </span>
-          <span style="font-size: 15px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--line);">
-            ${state.names[a]}
-          </span>
-          <span style="font-size: 14px; font-weight: 700; color: var(--amber); margin-left: 6px; padding-left: 8px; border-left: 1px solid var(--line-dim);">
-            PWR ${totalPower[a]}
-          </span>
-        </div>
-      `).join('')}
-    </div>
-  `;
-
-  // 4. Temporarily attach header overlay to stage
-  const stageEl = document.getElementById('stage');
-  stageEl.appendChild(exportHeader);
-
-  // Reset zoom and scrolling temporarily to prevent clipping
+  // 1. Reset zoom and scrolling temporarily to prevent clipping
   zoom = 1;
   applyZoom();
   viewport.scrollLeft = 0;
   viewport.scrollTop = 0;
 
+  const stageEl = document.getElementById('stage');
+
   try {
-    // 5. Render canvas with appended header
+    // 2. Render high-res canvas
     const canvas = await html2canvas(stageEl, {
       scale: 3,
       useCORS: true,
@@ -943,7 +931,7 @@ document.getElementById('export-png').addEventListener('click', async () => {
       backgroundColor: '#0a0f16'
     });
 
-    // 6. Download image
+    // 3. Create a temporary link element to trigger PNG download
     const link = document.createElement('a');
     link.download = 'vespator-map.png';
     link.href = canvas.toDataURL('image/png', 1.0);
@@ -953,10 +941,7 @@ document.getElementById('export-png').addEventListener('click', async () => {
     console.error('PNG Export failed:', err);
     alert('Export failed. If running locally, open the file via a local server (e.g. Live Server) to bypass browser image restrictions.');
   } finally {
-    // 7. Cleanup overlay element and restore viewport scale
-    if (exportHeader.parentNode) {
-      exportHeader.parentNode.removeChild(exportHeader);
-    }
+    // 4. Restore original screen zoom
     zoom = oldZoom;
     applyZoom();
   }
