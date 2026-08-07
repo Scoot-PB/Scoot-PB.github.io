@@ -185,25 +185,25 @@
   .islot.empty svg{display:none}
 
   /* theatres */
-  .theatres{position:absolute;left:204px;top:128px;max-width:280px;z-index:5}
-  .t-slots{
-    display:flex;gap:5px;background:linear-gradient(80deg,transparent,var(--panel) 12%);
-    padding:6px 7px;border-radius:2px;
-  }
-  .tslot-input{
-    field-sizing: content;
-    min-width: 100px;
-    max-width: 250px;
-    height: 20px;
-    border: 1px solid var(--line-dim);
-    border-radius: 2px;
-    background: var(--void-2);
-    color: var(--line);
-    font: 600 16px 'Rajdhani', sans-serif;
-    text-transform: uppercase;
-    text-align: center;
-    padding: 2px 6px;
-  }
+  .theatres{position:absolute;left:204px;top:128px;z-index:5}
+.t-slots{
+  display:flex;gap:5px;background:linear-gradient(80deg,transparent,var(--panel) 12%);
+  padding:6px 7px;border-radius:2px;
+  min-width: max-content; /* Prevents flex items from shrinking on canvas render */
+}
+ .tslot-input{
+  width: 110px;           /* Replaces fluid field-sizing with a stable fixed width */
+  height: 26px;
+  border: 1px solid var(--line-dim);
+  border-radius: 2px;
+  background: var(--void-2);
+  color: var(--line);
+  font: 700 12px/24px 'Rajdhani', sans-serif; /* Fixed line height prevents text squishing */
+  text-transform: uppercase;
+  text-align: center;
+  padding: 0 4px;
+  box-sizing: border-box; /* Forces padding/border inside the 110px width */
+}
   .tslot-input:focus, .tslot-input:hover{
     border-color:var(--amber);
     background:var(--panel);
